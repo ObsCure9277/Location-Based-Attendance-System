@@ -1,6 +1,20 @@
-# location_based_attendance_app
+# BMCS3413-Project II
 
-A new Flutter project.
+SOLO Final Year Project
+
+<b>Project Name</b>
+
+Location Based Attendance Mobile Application
+
+<b>Group Member</b>
+
+Ng Shen Zhi
+
+<b>Project Timeline</b>
+
+- Project Commencement: -
+- Project Completion: -
+
 
 ## Getting Started
 
