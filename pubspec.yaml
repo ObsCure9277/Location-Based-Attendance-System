@@ -30,10 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: ^0.18.0 # Or the latest version
+  geolocator: ^14.0.0 # <mcreference link="https://pub.dev/packages/geolocator" index="1">1</mcreference> <mcreference link="https://pub.dev/packages/geolocator/versions" index="5">5</mcreference>
+  flutter_background_geolocation: ^4.12.0 # <mcreference link="https://pub.dev/packages/flutter_background_geolocation" index="2">2</mcreference>
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  firebase_core: ^3.13.1
 
 dev_dependencies:
   flutter_test:

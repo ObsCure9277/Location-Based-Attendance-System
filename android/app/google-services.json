@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "340718914134",
+    "project_id": "geofencing-attendance-ap-910c8",
+    "storage_bucket": "geofencing-attendance-ap-910c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340718914134:android:8d27471590782ed4e489f7",
+        "android_client_info": {
+          "package_name": "com.example.location_based_attendance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqg0SsCiqL9k1xxV5HVSEmqE-OzCWe9Kw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
