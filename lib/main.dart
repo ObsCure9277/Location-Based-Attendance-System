@@ -33,7 +33,20 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
         brightness: Brightness.dark,
       ),
- 
+
+
+
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Firebase Initialization'),
+        ),
+        
+        body: const Center(
+          child: Text('Firebase Initialized Successfully!'),
+        ),
+      ),
+
+
     );
   }
 }
