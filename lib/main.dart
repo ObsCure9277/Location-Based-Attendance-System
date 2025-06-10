@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:location_based_attendance_app/wrapper.dart';
 
 void main() async{
 
@@ -34,19 +35,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
       ),
 
-
-
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Firebase Initialization'),
-        ),
-        
-        body: const Center(
-          child: Text('Firebase Initialized Successfully!'),
-        ),
-      ),
-
-
+      home: Wrapper()
     );
   }
 }
