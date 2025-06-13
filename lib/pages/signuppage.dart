@@ -1,29 +1,34 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:location_based_attendance_app/wrapper.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class Signup extends StatefulWidget {
+  const Signup({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Signup> createState() => _SignupState();
 }
 
-class _LoginState extends State<Login> {
-  
+class _SignupState extends State<Signup> {
+
   TextEditingController email=TextEditingController();
   TextEditingController password=TextEditingController();
 
-  signIn()async{
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
+  signup()async{
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: email.text.trim(),
       password: password.text.trim(),
     );
+    Get.offAll(Wrapper()); // Clear all previous routes
   }
+
+  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login"),),
+      appBar: AppBar(title: Text("Sign Up"),),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -35,20 +40,30 @@ class _LoginState extends State<Login> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 15),
             TextField(
               controller: password,
-              obscureText: true,
+              obscureText: _isObscure,
               decoration: InputDecoration(
                 labelText: "Password",
                 border: OutlineInputBorder(),
+                
+                suffixIcon: IconButton(
+                    icon: Icon(
+                        _isObscure ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  ),
+                ),
               ),
-            ),
             SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: (()=>signIn()),
-              child: Text("Login"),
+              onPressed: (()=>signup()),
+              child: Text("Sign Up"),
             ),
           ],
         ),
