@@ -12,7 +12,7 @@ Ng Shen Zhi
 
 <b>Project Timeline</b>
 
-- Project Commencement: -
+- Project Commencement: 13 June 2025
 - Project Completion: -
 
 
