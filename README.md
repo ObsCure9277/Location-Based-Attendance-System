@@ -4,7 +4,7 @@ SOLO Final Year Project
 
 <b>Project Name</b>
 
-Location Based Attendance Mobile Application
+Location Based Attendance Mobile Application - GeoMark
 
 <b>Group Member</b>
 
