@@ -1,26 +1,35 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:location_based_attendance_app/pages/calenderpage.dart';
-import 'package:location_based_attendance_app/pages/profilepage.dart';
-import 'package:location_based_attendance_app/pages/todaypage.dart';
+import 'package:location_based_attendance_app/pages/Admin/admin_class.dart';
+import 'package:location_based_attendance_app/pages/Admin/admin_geofence.dart';
+import 'package:location_based_attendance_app/pages/Admin/admin_leave.dart';
+import 'package:location_based_attendance_app/pages/Admin/admin_timetable.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class Adminhomepage extends StatefulWidget {
+  const Adminhomepage({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  State<Adminhomepage> createState() => _AdminhomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _AdminhomepageState extends State<Adminhomepage> {
 
   double screenHeight = 0;
   double screenWidth = 0;
   int currentIndex = 0;
 
+  final user = FirebaseAuth.instance.currentUser;
+
+  signout()async{
+    await FirebaseAuth.instance.signOut();
+  }
+
   List<IconData> navigationIcons = [
     FontAwesomeIcons.calendarDays,
-    FontAwesomeIcons.check,
-    FontAwesomeIcons.user,
+    FontAwesomeIcons.suitcaseRolling,
+    FontAwesomeIcons.userGroup,
+    FontAwesomeIcons.mapLocationDot,
   ];
 
   @override
@@ -29,13 +38,13 @@ class _HomepageState extends State<Homepage> {
     screenWidth = MediaQuery.of(context).size.width;
     
     return Scaffold(
-      appBar: AppBar(title: Text("Homepage"),),
       body: IndexedStack(
         index: currentIndex,
         children: const [
-          Calender(),
-          Today(),
-          Profile(),
+          Admintimetablepage(),
+          Adminleavepage(),
+          Adminclasspage(),
+          Admingeofencepage(),
         ],
       ),
       bottomNavigationBar: Container(

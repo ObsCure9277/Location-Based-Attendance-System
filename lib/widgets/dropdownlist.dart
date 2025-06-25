@@ -21,7 +21,7 @@ Widget customDropdown(
     ),
     child: Row(
       children: [
-        Container(
+        SizedBox(
           width: screenWidth / 6,
           child: Icon(icon, color: Colors.black, size: screenWidth / 15),
         ),

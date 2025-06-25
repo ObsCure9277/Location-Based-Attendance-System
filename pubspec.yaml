@@ -30,11 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.18.0 # Or the latest version
-  geolocator: ^14.0.0 # <mcreference link="https://pub.dev/packages/geolocator" index="1">1</mcreference> <mcreference link="https://pub.dev/packages/geolocator/versions" index="5">5</mcreference>
-  flutter_background_geolocation: ^4.12.0 # <mcreference link="https://pub.dev/packages/flutter_background_geolocation" index="2">2</mcreference>
-
-
+  intl: ^0.18.0 
+  geolocator: ^14.0.0 
+  geocoding: ^4.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -47,12 +45,27 @@ dependencies:
   get: ^4.7.2
   cloud_firestore: ^5.6.6
   image_picker: ^1.1.2
+  image_picker_for_web: ^3.0.6
   uuid: ^4.5.1
   flutter_cupertino_datetime_picker: ^3.0.0
   flutter_slidable: ^4.0.0
   flutter_keyboard_visibility: ^6.0.0
   shared_preferences: ^2.5.3
   font_awesome_flutter: ^10.8.0
+  slide_to_act: ^2.0.2
+  location: ^8.0.0
+  file_picker: ^10.2.0
+  path_provider: ^2.1.5
+  cloudinary_flutter: ^1.3.0
+  cloudinary_public: ^0.23.1
+  cloudinary_url_gen: ^1.8.0
+  http: ^1.4.0
+  flutter_dotenv: ^5.2.1
+  dio: ^5.8.0+1
+  url_launcher: ^6.3.1
+  url_launcher_android: ^6.3.16
+  open_file: ^3.5.10
+  permission_handler: ^12.0.0+1
 
 dev_dependencies:
   flutter_test:
@@ -78,8 +91,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-  - assets/
-
+  - assets/images/userAvatar.png
+  
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
@@ -102,6 +115,13 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  #
+  fonts:
+    - family: NexaBold
+      fonts:
+        - asset: assets/fonts/NexaBold.otf
+    - family: NexaRegular
+      fonts:
+        - asset: assets/fonts/NexaRegular.otf
+        
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

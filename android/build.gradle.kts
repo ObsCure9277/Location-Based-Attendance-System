@@ -2,6 +2,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://transistorsoft.bintray.com/maven") }
     }
 }
 
@@ -18,8 +20,4 @@ subprojects {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-
-plugins {
-    id("com.google.gms.google-services") version "4.4.2" apply false
 }

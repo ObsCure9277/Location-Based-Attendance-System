@@ -1,0 +1,175 @@
+
+class LocationPoint {
+  final String name;
+  final double lat;
+  final double lng;
+  final double radius; // meters
+
+  const LocationPoint({
+    required this.name,
+    required this.lat,
+    required this.lng,
+    required this.radius,
+  });
+}
+
+const List<LocationPoint> locations = [
+  LocationPoint(
+    name: 'Block K',
+    lat: 3.21670874877079,
+    lng: 101.72518364398834,
+    radius: 300, // meters
+  ),
+  LocationPoint(
+    name: 'DK B',
+    lat: 3.2166496338397126,
+    lng: 101.72557507164109,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block H',
+    lat: 3.2153611421914103, 
+    lng: 101.72597842789403,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 1',
+    lat: 3.2162761493861862, 
+    lng: 101.72587568101797,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 2',
+    lat: 3.2164377717705235, 
+    lng: 101.72588525012362,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 3',
+    lat: 3.2164489181409017, 
+    lng: 101.72611570608484,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 4',
+    lat: 3.216253856641523, 
+    lng: 101.7260806193641,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Cyber Centre (CITC)',
+    lat: 3.2139624703273184, 
+    lng: 101.72657725304933,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block B',
+    lat: 33.21547734989597, 
+    lng: 101.72665327454321,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block C',
+    lat: 3.2159676863645883, 
+    lng: 101.72705990887746,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block M',
+    lat: 3.2167724590154254, 
+    lng: 101.72777415034922,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block D',
+    lat: 3.216872035926631,  
+    lng: 101.7266451580374,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block C',
+    lat: 3.2159676863645883, 
+    lng: 101.72705990887746,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK A',
+    lat: 3.216740145275207, 
+    lng: 101.72722518571676,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 5',
+    lat: 3.216873588854782, 
+    lng: 101.72596334375604,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 6',
+    lat: 3.21700636043086, 
+    lng: 101.72590640946294,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK 7',
+    lat: 3.2169976569888217,
+    lng: 101.72609550519138,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block PA',
+    lat: 3.2176587093412787, 
+    lng: 101.72607635061016,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block P',
+    lat: 3.2177890340509814,
+    lng: 101.72640731375988,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block Q',
+    lat: 3.217982639667535,
+    lng: 101.7271286190291,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block R',
+    lat: 3.2179650263537933, 
+    lng: 101.72780372257084,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'Block N',
+    lat: 3.2173129968844583, 
+    lng: 101.72715887718505,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK C',
+    lat: 3.218119379260048,
+    lng:  101.72851699489857, 
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK D',
+    lat: 3.2181394641044765,  
+    lng: 101.72821859916053,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK W',
+    lat: 3.2177152655617376,  
+    lng: 101.72824891771425,
+    radius: 300, 
+  ),
+  LocationPoint(
+    name: 'DK Y',
+    lat: 3.217702545155012,  
+    lng: 101.72850640976687,
+    radius: 300, 
+  ),
+];
+
+  

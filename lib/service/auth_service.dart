@@ -25,9 +25,8 @@ class AuthService {
   Future<UserCredential> createAccount({
     required String name,
     required String email,
-    required String phoneNumber,
-    required String location,
     required String password,
+    required String phoneNumber,
     required String role,
   }) async {
     UserCredential userCredential = await firebaseAuth
@@ -36,18 +35,21 @@ class AuthService {
     String uid = userCredential.user!.uid;
 
     await firestore
-        .collection(role == 'student' ? 'Student' : 'Staff')
+        .collection(
+          role == 'Student'
+              ? 'Student'
+              : (role == 'Staff' ? 'Staff' : 'Admin'),
+        )
         .doc(uid)
         .set({
           'name': name,
           'email': email,
           'phoneNumber': phoneNumber,
-          'location': location,
           'role': role,
           'avatar': 'assets/images/userAvatar.png',
           'createdAt': DateTime.now().toIso8601String(),
+          'GroupName': '',
         });
-
     await updateUsername(username: name);
 
     return userCredential;
@@ -80,7 +82,7 @@ class AuthService {
       if (currentPassword == newPassword) {
         throw FirebaseAuthException(
           code: 'password-same-as-current',
-          message: 'New password cannot be the same as the current password',
+          message: 'New password cannot be the same as the current password.',
         );
       }
       await currentUser!.updatePassword(newPassword);
@@ -88,6 +90,25 @@ class AuthService {
       throw e;
     } catch (e) {
       throw Exception('Unknown error: $e');
+    }
+  }
+
+  Future<void> assignedGroup({
+    required String studentEmail,
+    required String groupName,
+  }) async {
+    // Find the student document by email
+    final query =
+        await firestore
+            .collection('Student')
+            .where('email', isEqualTo: studentEmail)
+            .get();
+
+    if (query.docs.isNotEmpty) {
+      final studentDoc = query.docs.first;
+      await studentDoc.reference.update({'GroupName': groupName});
+    } else {
+      throw Exception('Student with email $studentEmail not found.');
     }
   }
 }
