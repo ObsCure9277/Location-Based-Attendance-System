@@ -2,15 +2,15 @@
 
 SOLO Final Year Project
 
-<b>Project Name</b>
+### Project Name 
 
 Location Based Attendance Mobile Application - GeoMark
 
-<b>Group Member</b>
+### Group Member
 
 Ng Shen Zhi
 
-<b>Project Timeline</b>
+### Project Timeline
 
 - Project Commencement: 13 June 2025
 - Project Completion: -
