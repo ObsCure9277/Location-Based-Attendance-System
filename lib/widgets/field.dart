@@ -106,10 +106,9 @@ Widget editableCustomField(
   TextEditingController controller,
   IconData fieldIcon,
   double screenHeight,
-  double screenWidth,
-  {required bool readOnly}
-) 
-{
+  double screenWidth, {
+  required bool readOnly,
+}) {
   return Container(
     width: screenWidth,
     margin: EdgeInsets.only(bottom: 12),
@@ -147,5 +146,31 @@ Widget editableCustomField(
         ),
       ],
     ),
+  );
+}
+
+Widget buildMenuTile({
+  required IconData icon,
+  required String title,
+  Widget? trailing,
+  Color iconColor = Colors.black,
+  Color textColor = Colors.black,
+  required VoidCallback onTap,
+}) {
+  return ListTile(
+    leading: Icon(icon, color: iconColor),
+    title: Text(
+      title, 
+      style: TextStyle(
+        color: textColor, 
+        fontSize: 16,
+        fontFamily: "NexaRegular",
+        fontWeight: FontWeight.bold,
+      )
+    ),
+    trailing:
+        trailing ??
+        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
+    onTap: onTap,
   );
 }

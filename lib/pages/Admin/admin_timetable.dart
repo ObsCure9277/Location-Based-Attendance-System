@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 
@@ -33,7 +34,20 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
   DateTime selectedDate = DateTime.now();
 
   void deleteTimetable(DocumentSnapshot doc) async {
+    // Delete all attendance records for this timetable
+    final attendanceSnapshot =
+        await firestore
+            .collection('Attendance')
+            .where('timetableId', isEqualTo: doc.id)
+            .get();
+
+    for (final attendanceDoc in attendanceSnapshot.docs) {
+      await attendanceDoc.reference.delete();
+    }
+
+    // Delete the timetable itself
     await firestore.collection('Timetable').doc(doc.id).delete();
+
     ScaffoldMessenger.of(context).showSnackBar(
       CustomSnackBar().successSnackBar(
         message: 'Timetable deleted successfully!',
@@ -124,7 +138,7 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                       .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(child: SplashScreen());
                 }
 
                 final docs = snapshot.data!.docs;

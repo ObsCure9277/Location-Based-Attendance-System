@@ -38,7 +38,7 @@ class _StaffhomepageState extends State<Staffhomepage> {
         index: currentIndex,
         children: const [
           Stafftimetablepage(),
-          Profile(),
+          Profilepage(),
         ],
       ),
       bottomNavigationBar: Container(

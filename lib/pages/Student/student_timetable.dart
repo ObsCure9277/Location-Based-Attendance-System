@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 
 class Studenttimetablepage extends StatefulWidget {
   const Studenttimetablepage({super.key});
@@ -126,7 +127,7 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                       .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(child: SplashScreen());
                 }
 
                 final docs = snapshot.data!.docs;
@@ -276,7 +277,6 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                                             ),
                                           ),
                                           Spacer(),
-                                          // Green check icon if attendance is marked
                                           StreamBuilder<QuerySnapshot>(
                                             stream:
                                                 FirebaseFirestore.instance
@@ -303,11 +303,34 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                                                       .data!
                                                       .docs
                                                       .isNotEmpty) {
-                                                return const Icon(
-                                                  Icons.check_circle,
-                                                  color: Colors.green,
-                                                  size: 28,
-                                                );
+                                                final attendanceData =
+                                                    attendanceSnapshot
+                                                            .data!
+                                                            .docs
+                                                            .first
+                                                            .data()
+                                                        as Map<String, dynamic>;
+                                                final status =
+                                                    attendanceData['attendanceStatus'];
+                                                if (status == 'Present') {
+                                                  return const Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.green,
+                                                    size: 28,
+                                                  );
+                                                } else if (status == 'Absent') {
+                                                  return const Icon(
+                                                    Icons.cancel,
+                                                    color: Colors.red,
+                                                    size: 28,
+                                                  );
+                                                } else if (status == 'Leave') {
+                                                  return const Icon(
+                                                    Icons.work,
+                                                    color: Colors.orange,
+                                                    size: 28,
+                                                  );
+                                                }
                                               }
                                               return const SizedBox.shrink();
                                             },

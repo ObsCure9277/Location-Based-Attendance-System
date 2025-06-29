@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Global/initial.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 
@@ -148,7 +149,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
         stream: firestore.collection('Location').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: SplashScreen());
           }
 
           List docs = snapshot.data!.docs;

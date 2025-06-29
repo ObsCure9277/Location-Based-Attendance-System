@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 
 class ManualAttendancepage extends StatefulWidget {
   final Map<String, dynamic> timetableData;
@@ -23,6 +24,9 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
   String _sortType = 'Group';
   bool _ascending = true;
   String _searchQuery = '';
+
+  // Map to cache attendance statuses
+  Map<String, String> attendanceStatusMap = {};
 
   @override
   void initState() {
@@ -66,10 +70,14 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
             .where('timetableId', isEqualTo: widget.timetableId)
             .get();
 
-    final attendedIds =
-        attendanceSnapshot.docs
-            .map((doc) => doc['studentId'] as String)
-            .toSet();
+    final attendedIds = <String>{};
+    attendanceStatusMap.clear();
+    for (var doc in attendanceSnapshot.docs) {
+      final studentId = doc['studentId'] as String;
+      final status = doc['attendanceStatus'] as String? ?? 'Absent';
+      attendanceStatusMap[studentId] = status;
+      if (status == 'Present') attendedIds.add(studentId);
+    }
 
     setState(() {
       students = studentsList;
@@ -78,31 +86,28 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
     });
   }
 
-  Future<void> setAttendance(String studentId, bool attended) async {
-    if (attended) {
-      // Mark attendance
-      await FirebaseFirestore.instance.collection('Attendance').add({
-        'studentId': studentId,
-        'timetableId': widget.timetableId,
+  Future<void> setAttendance(String studentId, String status) async {
+    // Find the attendance record for this student and timetable
+    final snapshot = await FirebaseFirestore.instance
+        .collection('Attendance')
+        .where('studentId', isEqualTo: studentId)
+        .where('timetableId', isEqualTo: widget.timetableId)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final docRef = snapshot.docs.first.reference;
+      await docRef.update({
+        'attendanceStatus': status,
         'timestamp': FieldValue.serverTimestamp(),
-        'locationName': widget.timetableData['locationName'] ?? '',
       });
       setState(() {
-        attendedStudentIds.add(studentId);
-      });
-    } else {
-      // Unmark attendance
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection('Attendance')
-              .where('studentId', isEqualTo: studentId)
-              .where('timetableId', isEqualTo: widget.timetableId)
-              .get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete();
-      }
-      setState(() {
-        attendedStudentIds.remove(studentId);
+        if (status == 'Present') {
+          attendedStudentIds.add(studentId);
+        } else {
+          attendedStudentIds.remove(studentId);
+        }
+        
+        attendanceStatusMap[studentId] = status;
       });
     }
   }
@@ -217,11 +222,10 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
               ),
             ],
           ),
-          const SizedBox(width: 22),
         ],
       ),
       body: loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: SplashScreen())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -343,11 +347,7 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
                   ),
                 ),
                 ...sortedStudents.map(
-                  (student) => CheckboxListTile(
-                    value: attendedStudentIds.contains(student['id']),
-                    onChanged: (checked) async {
-                      await setAttendance(student['id'], checked ?? false);
-                    },
+                  (student) => ListTile(
                     title: Text(
                       student['name'],
                       style: const TextStyle(
@@ -355,11 +355,46 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    subtitle: Text(
-                      'Tutorial Group: ${student['group']}',
+                    subtitle: Text('Tutorial Group: ${student['group']}'),
+                    trailing: DropdownButton<String>(
+                      value: ['Absent', 'Present', 'Leave'].contains(getStudentStatus(student['id']))
+                          ? getStudentStatus(student['id'])
+                          : 'Absent',
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Absent', 
+                          child: Text(
+                            'Absent',
+                            style: TextStyle(
+                              fontFamily: 'NexaBold',
+                              color: Colors.red,
+                            )
+                          )
+                        ),
+                        DropdownMenuItem(value: 'Present', 
+                          child: Text(
+                            'Present',
+                            style: TextStyle(
+                              fontFamily: 'NexaBold',
+                              color: Colors.green,
+                            )
+                          )),
+                        DropdownMenuItem(value: 'Leave', 
+                          child: Text(
+                            'Leave',
+                            style: TextStyle(
+                              fontFamily: 'NexaBold',
+                              color: Colors.orange,
+                            )
+                          )),
+                      ],
+                      onChanged: (status) async {
+                        if (status != null) {
+                          String fixedStatus = status[0].toUpperCase() + status.substring(1).toLowerCase();
+                          await setAttendance(student['id'], fixedStatus);
+                        }
+                      },
                     ),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: Colors.green,
                   ),
                 ),
                 if (students.isEmpty)
@@ -367,5 +402,9 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
               ],
             ),
     );
+  }
+
+  String getStudentStatus(String studentId) {
+    return attendanceStatusMap[studentId] ?? 'Absent';
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Admin/leave_manage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 
 class Adminleavepage extends StatefulWidget {
   const Adminleavepage({super.key});
@@ -84,7 +85,7 @@ class _AdminleavepageState extends State<Adminleavepage> {
         stream: leaveQuery.snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: SplashScreen());
           }
           final docs = snapshot.data!.docs;
           if (docs.isEmpty) {

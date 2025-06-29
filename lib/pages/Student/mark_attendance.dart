@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 import 'package:location_based_attendance_app/widgets/dropdownlist.dart';
@@ -255,12 +256,6 @@ class _AttendancepageState extends State<Attendancepage> {
     final endTime = parseTime(formattedDate, currentClass!['EndTime']);
     final withinTime = now.isAfter(startTime) && now.isBefore(endTime);
 
-    // Debug info
-    print('Now: $now, Start: $startTime, End: $endTime, Within: $withinTime');
-    print(
-      'Current: $latitude, $longitude | Geofence: $lat, $lng, radius: $radius | Distance: $distance | Inside: $insideGeofence',
-    );
-
     setState(() {
       canMarkAttendance = insideGeofence && withinTime;
     });
@@ -270,7 +265,7 @@ class _AttendancepageState extends State<Attendancepage> {
   Future<void> markAttendance() async {
     if (currentClass == null) return;
 
-    // Check if attendance already exists for this student and timetable
+    // Find the existing attendance record for this student and timetable
     final attendanceQuery =
         await FirebaseFirestore.instance
             .collection('Attendance')
@@ -281,27 +276,60 @@ class _AttendancepageState extends State<Attendancepage> {
             .where('timetableId', isEqualTo: currentClass!['id'])
             .get();
 
-    if (attendanceQuery.docs.isNotEmpty) {
+    if (attendanceQuery.docs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         CustomSnackBar().errorSnackBar(
-          message: 'Attendance already marked for this class.',
+          message: 'Attendance record not found for this class.',
         ),
       );
       return;
     }
 
-    // If not, allow marking attendance
-    await FirebaseFirestore.instance.collection('Attendance').add({
-      'studentId': FirebaseAuth.instance.currentUser!.uid,
-      'timetableId': currentClass!['id'] ?? '',
-      'timestamp': FieldValue.serverTimestamp(),
-      'locationName': currentClass!['locationName'] ?? '',
-    });
+    final attendanceDocId = attendanceQuery.docs.first.id;
+
+    // Update the attendance record to present
+    await FirebaseFirestore.instance
+        .collection('Attendance')
+        .doc(attendanceDocId)
+        .update({
+          'attendanceStatus': 'Present',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
     ScaffoldMessenger.of(context).showSnackBar(
       CustomSnackBar().successSnackBar(
         message: 'Attendance is marked successfully.',
       ),
     );
+  }
+
+  Future<void> createTimetableAndAttendance(
+    Map<String, dynamic> timetableData,
+    List<String> groupNames,
+  ) async {
+    // 1. Create the timetable
+    final timetableRef = await FirebaseFirestore.instance
+        .collection('Timetable')
+        .add(timetableData);
+
+    // 2. For each group, get all students and create attendance records
+    for (final groupName in groupNames) {
+      final studentsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('Student')
+              .where('GroupName', isEqualTo: groupName)
+              .get();
+
+      for (final studentDoc in studentsSnapshot.docs) {
+        await FirebaseFirestore.instance.collection('Attendance').add({
+          'studentId': studentDoc.id,
+          'timetableId': timetableRef.id,
+          'timestamp': null, // Not marked yet
+          'locationName': timetableData['locationName'] ?? '',
+          'attendanceStatus': 'Absent',
+        });
+      }
+    }
   }
 
   @override
@@ -353,7 +381,7 @@ class _AttendancepageState extends State<Attendancepage> {
                   ),
                   Container(
                     alignment: Alignment.centerLeft,
-                    child: const CircularProgressIndicator(),
+                    child: const SplashScreen(),
                   ),
                 ],
               );
@@ -393,14 +421,13 @@ class _AttendancepageState extends State<Attendancepage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                        Text(
-                          'Today\'s Classes',
-                          style: TextStyle(
-                            fontFamily: "NexaBold",
-                            fontSize: screenWidth / 18,
-                          ),
+                      Text(
+                        'Today\'s Classes',
+                        style: TextStyle(
+                          fontFamily: "NexaBold",
+                          fontSize: screenWidth / 18,
                         ),
-                      
+                      ),
                     ],
                   ),
                 ),
@@ -561,6 +588,10 @@ class _AttendancepageState extends State<Attendancepage> {
                                                     ? ['dummy']
                                                     : timetableIds,
                                           )
+                                          .where(
+                                            'attendanceStatus',
+                                            whereIn: ['Present', 'Leave'],
+                                          )
                                           .snapshots(),
                                   builder: (context, attendanceSnapshot) {
                                     if (!attendanceSnapshot.hasData) {
@@ -643,8 +674,8 @@ class _AttendancepageState extends State<Attendancepage> {
                 ),
                 SizedBox(height: 10),
                 Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -672,7 +703,7 @@ class _AttendancepageState extends State<Attendancepage> {
                                 ? Colors.green
                                 : Colors.red,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           "Location status: ${locationPermissionGranted ? "Operational" : locationStatus}",
@@ -682,7 +713,7 @@ class _AttendancepageState extends State<Attendancepage> {
                                     ? Colors.green
                                     : Colors.red,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -706,9 +737,9 @@ class _AttendancepageState extends State<Attendancepage> {
                         (cls) => '${cls['locationName']} (${cls['StartTime']})',
                       )
                       .toList(),
-                  screenHeight,
+                  screenHeight / 35,
                   screenWidth,
-                  Icons.class_,
+                  Icons.school,
                   (String? newValue) {
                     final index = availableClasses.indexWhere(
                       (cls) =>

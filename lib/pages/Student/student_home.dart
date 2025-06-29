@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:location_based_attendance_app/pages/Student/attendance_summary.dart';
 import 'package:location_based_attendance_app/pages/Student/student_leave.dart';
 import 'package:location_based_attendance_app/pages/Student/student_timetable.dart';
 import 'package:location_based_attendance_app/service/location_service.dart';
@@ -25,7 +26,7 @@ class _StudenthomepageState extends State<Studenthomepage> {
   List<IconData> navigationIcons = [
     FontAwesomeIcons.check,
     FontAwesomeIcons.calendarDays,
-    FontAwesomeIcons.suitcaseRolling,
+    FontAwesomeIcons.list,
     FontAwesomeIcons.user,
   ];
   
@@ -54,8 +55,8 @@ class _StudenthomepageState extends State<Studenthomepage> {
         children: const [
           Attendancepage(),
           Studenttimetablepage(),
-          Studentleavepage(),
-          Profile(),
+          AttendanceSummarypage(),
+          Profilepage(),
         ],
       ),
       bottomNavigationBar: Container(

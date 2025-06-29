@@ -5,7 +5,8 @@ import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 
 class Forgotpassword extends StatefulWidget {
-  const Forgotpassword({super.key});
+  final bool fromProfile;
+  const Forgotpassword({super.key, this.fromProfile = false});
 
   @override
   State<Forgotpassword> createState() => _ForgotpasswordState();
@@ -32,7 +33,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          "Forgot Password",
+          widget.fromProfile ? "Reset Password" : "Forgot Password",
           style: TextStyle(
             fontSize: 20,
             fontFamily: "NexaBold",

@@ -6,8 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TimetableForm extends StatefulWidget {
   final DocumentSnapshot? docToEdit;
@@ -21,15 +19,15 @@ class TimetableForm extends StatefulWidget {
 class _TimetableFormState extends State<TimetableForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController dayController = TextEditingController();
-  final TextEditingController dateController = TextEditingController();
-  final TextEditingController startTimeController = TextEditingController();
-  final TextEditingController endTimeController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
-  final TextEditingController subjectController = TextEditingController();
-  final TextEditingController lecturerController = TextEditingController();
-  final TextEditingController groupNameController = TextEditingController();
-  final TextEditingController typeController = TextEditingController();
+  final dayController = TextEditingController();
+  final dateController = TextEditingController();
+  final startTimeController = TextEditingController();
+  final endTimeController = TextEditingController();
+  final locationController = TextEditingController();
+  final subjectController = TextEditingController();
+  final lecturerController = TextEditingController();
+  final groupNameController = TextEditingController();
+  final typeController = TextEditingController();
 
   List<Map<String, dynamic>> allLecturers = [];
   List<Map<String, dynamic>> filteredLecturers = [];
@@ -259,6 +257,8 @@ class _TimetableFormState extends State<TimetableForm> {
             .collection('Timetable')
             .add(data);
         await docRef.update({'id': docRef.id});
+        // Pass the timetable ID to the attendance creation
+        await createTimetableAndAttendance(docRef.id, data, selectedGroups);
       } else {
         // Update existing timetable
         await FirebaseFirestore.instance
@@ -272,11 +272,48 @@ class _TimetableFormState extends State<TimetableForm> {
 
   void deleteTimetableData() async {
     if (widget.docToEdit != null) {
+      // Delete all attendance records for this timetable
+      final attendanceSnapshot =
+          await FirebaseFirestore.instance
+              .collection('Attendance')
+              .where('timetableId', isEqualTo: widget.docToEdit!.id)
+              .get();
+
+      for (final doc in attendanceSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Delete the timetable itself
       await FirebaseFirestore.instance
           .collection('Timetable')
           .doc(widget.docToEdit!.id)
           .delete();
+
       Navigator.pop(context);
+    }
+  }
+
+  Future<void> createTimetableAndAttendance(
+    String timetableId,
+    Map<String, dynamic> timetableData,
+    List<String> groupNames,
+  ) async {
+    for (final groupName in groupNames) {
+      final studentsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('Student')
+              .where('GroupName', isEqualTo: groupName)
+              .get();
+
+      for (final studentDoc in studentsSnapshot.docs) {
+        await FirebaseFirestore.instance.collection('Attendance').add({
+          'studentId': studentDoc.id,
+          'timetableId': timetableId,
+          'timestamp': null, // Not marked yet
+          'locationName': timetableData['locationName'] ?? '',
+          'attendanceStatus': 'Absent',
+        });
+      }
     }
   }
 
@@ -289,7 +326,7 @@ class _TimetableFormState extends State<TimetableForm> {
       appBar: AppBar(
         title: Text(
           widget.docToEdit == null ? 'Add Timetable' : 'Edit Timetable',
-          style: TextStyle(fontSize: screenWidth / 22, fontFamily: "NexaBold"),
+          style: TextStyle(fontSize: 20, fontFamily: "NexaBold"),
         ),
       ),
       body: Padding(
@@ -628,10 +665,9 @@ class ClassForm extends StatefulWidget {
 
 class _ClassFormState extends State<ClassForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController groupNameController = TextEditingController();
-  final TextEditingController studentController = TextEditingController();
+  final groupNameController = TextEditingController();
+  final studentController = TextEditingController();
   List<String> students = [];
-
   List<Map<String, dynamic>> allStudents = [];
   List<Map<String, dynamic>> filteredStudents = [];
   Set<String> assignedStudentEmails = {}; // Track assigned students
@@ -842,7 +878,7 @@ class _ClassFormState extends State<ClassForm> {
       appBar: AppBar(
         title: Text(
           widget.docToEdit == null ? 'Add Class' : 'Edit Class',
-          style: TextStyle(fontSize: screenWidth / 22, fontFamily: "NexaBold"),
+          style: TextStyle(fontSize: 20, fontFamily: "NexaBold"),
         ),
       ),
       body: Padding(
@@ -940,6 +976,19 @@ class _ClassFormState extends State<ClassForm> {
                     );
                   } else {
                     saveClassData();
+                    if (widget.docToEdit == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        CustomSnackBar().successSnackBar(
+                          message: "Tutorial Group added successfully!",
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        CustomSnackBar().successSnackBar(
+                          message: "Tutorial Group updated successfully!",
+                        ),
+                      );
+                    }
                   }
                 },
                 child: buttonInText(
@@ -967,10 +1016,10 @@ class LocationForm extends StatefulWidget {
 
 class _LocationFormState extends State<LocationForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController locationNameController = TextEditingController();
-  final TextEditingController latController = TextEditingController();
-  final TextEditingController lngController = TextEditingController();
-  final TextEditingController radiusController = TextEditingController();
+  final locationNameController = TextEditingController();
+  final latController = TextEditingController();
+  final lngController = TextEditingController();
+  final radiusController = TextEditingController();
 
   List<Map<String, dynamic>> locations = [];
 
@@ -1049,7 +1098,7 @@ class _LocationFormState extends State<LocationForm> {
       appBar: AppBar(
         title: Text(
           widget.docToEdit == null ? 'Add Location' : 'Edit Location',
-          style: TextStyle(fontSize: screenWidth / 22, fontFamily: "NexaBold"),
+          style: TextStyle(fontSize: 20, fontFamily: "NexaBold"),
         ),
       ),
       body: Padding(
@@ -1190,15 +1239,14 @@ class LeaveRequestForm extends StatefulWidget {
 
 class _LeaveRequestFormState extends State<LeaveRequestForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController startDateController = TextEditingController();
-  final TextEditingController endDateController = TextEditingController();
+  final startDateController = TextEditingController();
+  final endDateController = TextEditingController();
+  final reasonController = TextEditingController();
+  final studentNameController = TextEditingController();
+  final requestDateController = TextEditingController();
 
-  final TextEditingController reasonController = TextEditingController();
-  final TextEditingController studentNameController = TextEditingController();
-  final TextEditingController requestDateController = TextEditingController();
-
-  String? supportingDocumentUrl;
-  PlatformFile? supportingDocument;
+  List<PlatformFile> supportingDocuments = [];
+  List<String> supportingDocumentUrls = [];
   String? existingStatus;
   double screenHeight = 0;
   double screenWidth = 0;
@@ -1214,13 +1262,25 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
       studentNameController.text = data['StudentName'] ?? '';
       existingStatus = data['Status'] ?? 'Pending';
       requestDateController.text = data['RequestDate'] ?? '';
+      supportingDocumentUrls = List<String>.from(
+        data['SupportingDocument'] ?? [],
+      );
     } else {
       autofillStudentName();
-      // Autofill request date with today
       final now = DateTime.now();
       requestDateController.text =
           "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
     }
+  }
+
+  @override
+  void dispose() {
+    startDateController.dispose();
+    endDateController.dispose();
+    reasonController.dispose();
+    studentNameController.dispose();
+    requestDateController.dispose();
+    super.dispose();
   }
 
   Future<void> autofillStudentName() async {
@@ -1270,7 +1330,7 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
             widget.docToEdit == null
                 ? 'Pending'
                 : (existingStatus ?? 'Pending'),
-        'SupportingDocument': supportingDocumentUrl ?? '',
+        'SupportingDocument': supportingDocumentUrls,
       };
 
       if (widget.docToEdit == null) {
@@ -1324,7 +1384,7 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
       appBar: AppBar(
         title: Text(
           widget.docToEdit == null ? 'Add Leave Request' : 'Edit Leave Request',
-          style: TextStyle(fontSize: screenWidth / 22, fontFamily: "NexaBold"),
+          style: TextStyle(fontSize: 20, fontFamily: "NexaBold"),
         ),
       ),
       body: Padding(
@@ -1396,19 +1456,35 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
                 maxLength: 200,
               ),
               const SizedBox(height: 10),
+              // --- Multiple File Upload Section ---
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      supportingDocument != null
-                          ? supportingDocument!.name
-                          : 'No document selected',
-                      style: const TextStyle(
-                        fontFamily: "NexaRegular",
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child:
+                        supportingDocuments.isNotEmpty
+                            ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children:
+                                  supportingDocuments
+                                      .map(
+                                        (file) => Text(
+                                          file.name,
+                                          style: const TextStyle(
+                                            fontFamily: "NexaRegular",
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                      .toList(),
+                            )
+                            : const Text(
+                              'No document selected',
+                              style: TextStyle(
+                                fontFamily: "NexaRegular",
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton.icon(
@@ -1423,30 +1499,66 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
                           .pickFiles(
                             type: FileType.custom,
                             allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                            allowMultiple: true,
                           );
                       if (result != null && result.files.isNotEmpty) {
-                        final file = File(result.files.first.path!);
-                        String? fileUrl = await uploadFileToCloudinary(file);
-                        if (fileUrl != null) {
-                          setState(() {
-                            supportingDocument = result.files.first;
-                            supportingDocumentUrl = fileUrl;
-                          });
-                        } else {
-                          setState(() {
-                            supportingDocument = null;
-                            supportingDocumentUrl = null;
-                          });
-                        }
+                        setState(() {
+                          // Merge new files with existing, avoiding duplicates by path
+                          final existingPaths =
+                              supportingDocuments.map((f) => f.path).toSet();
+                          final newFiles = result.files.where(
+                            (f) => !existingPaths.contains(f.path),
+                          );
+                          // Limit total files to 3
+                          final totalFiles =
+                              supportingDocuments.length + newFiles.length;
+                          if (totalFiles > 3) {
+                            final allowedToAdd = 3 - supportingDocuments.length;
+                            supportingDocuments.addAll(
+                              newFiles.take(allowedToAdd),
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              CustomSnackBar().errorSnackBar(
+                                message: "You can only upload maximum 3 files.",
+                              ),
+                            );
+                          } else {
+                            supportingDocuments.addAll(newFiles);
+                          }
+                          supportingDocumentUrls = [];
+                        });
                       }
                     },
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              Text(
+                'Note: Only JPG, JPEG, PNG, PDF allowed.',
+                style: TextStyle(
+                  fontFamily: "NexaRegular",
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth / 30,
+                  color: Colors.red,
+                ),
+              ),
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () async {
                   FocusScope.of(context).unfocus();
+                  final startParts = startDateController.text.split('-');
+                  final endParts = endDateController.text.split('-');
+                  final start = DateTime(
+                    int.parse(startParts[2]),
+                    int.parse(startParts[1]),
+                    int.parse(startParts[0]),
+                  );
+                  final end = DateTime(
+                    int.parse(endParts[2]),
+                    int.parse(endParts[1]),
+                    int.parse(endParts[0]),
+                  );
+
                   if (studentNameController.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       CustomSnackBar().errorSnackBar(
@@ -1471,69 +1583,53 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
                         message: "Reason of Leave cannot be empty",
                       ),
                     );
-                  } else if (supportingDocument == null ||
-                      supportingDocumentUrl == null ||
-                      supportingDocumentUrl!.isEmpty) {
+                  } else if (supportingDocuments.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       CustomSnackBar().errorSnackBar(
-                        message: "Supporting document is required",
+                        message: "At least one supporting document is required",
+                      ),
+                    );
+                  } else if (end.isBefore(start)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      CustomSnackBar().errorSnackBar(
+                        message: "End Date cannot be earlier than Start Date",
                       ),
                     );
                   } else {
-
-                    final startParts = startDateController.text.split('-');
-                    final endParts = endDateController.text.split('-');
-                    final start = DateTime(
-                      int.parse(startParts[2]),
-                      int.parse(startParts[1]),
-                      int.parse(startParts[0]),
-                    );
-                    final end = DateTime(
-                      int.parse(endParts[2]),
-                      int.parse(endParts[1]),
-                      int.parse(endParts[0]),
-                    );
-                    if (end.isBefore(start)) {
+                    List<String> fileUrls = [];
+                    for (final file in supportingDocuments) {
+                      final url = await uploadFileToCloudinary(
+                        File(file.path!),
+                      );
+                      if (url != null) {
+                        fileUrls.add(url);
+                      }
+                    }
+                    if (fileUrls.length != supportingDocuments.length) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         CustomSnackBar().errorSnackBar(
-                          message: "End Date cannot be earlier than Start Date",
+                          message: "Failed to upload all supporting documents.",
                         ),
                       );
                       return;
                     }
+                    supportingDocumentUrls = fileUrls;
 
-                    final data = {
-                      'RequestDate': requestDateController.text,
-                      'StartDate': startDateController.text,
-                      'EndDate': endDateController.text,
-                      'Reason': reasonController.text,
-                      'StudentName': studentNameController.text,
-                      'Status':
-                          widget.docToEdit == null
-                              ? 'Pending'
-                              : (existingStatus ?? 'Pending'),
-                      'SupportingDocument': supportingDocumentUrl ?? '',
-                    };
+                    saveLeaveRequest();
 
                     if (widget.docToEdit == null) {
-                      await FirebaseFirestore.instance
-                          .collection('LeaveRequests')
-                          .add(data);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        CustomSnackBar().successSnackBar(
+                          message: "Leave Request added successfully!",
+                        ),
+                      );
                     } else {
-                      await FirebaseFirestore.instance
-                          .collection('LeaveRequests')
-                          .doc(widget.docToEdit!.id)
-                          .update(data);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        CustomSnackBar().successSnackBar(
+                          message: "Leave Request updated successfully!",
+                        ),
+                      );
                     }
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      CustomSnackBar().successSnackBar(
-                        message:
-                            widget.docToEdit == null
-                                ? "Leave Request added successfully!"
-                                : "Leave Request updated successfully!",
-                      ),
-                    );
                   }
                 },
                 child: Container(

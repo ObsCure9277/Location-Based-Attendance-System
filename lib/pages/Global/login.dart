@@ -96,6 +96,9 @@ class _LoginState extends State<Login> {
       } else if ((await FirebaseFirestore.instance.collection('Admin').doc(uid).get()).exists) {
         role = 'Admin';
       }
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         CustomSnackBar().successSnackBar(message: 'Login successfully'),

@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:location_based_attendance_app/widgets/row.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
+import 'package:location_based_attendance_app/widgets/snackbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:open_file/open_file.dart';
-import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'dart:io';
 
-Future<String?> downloadFile(String url) async {
-  try {
-    final dir = await getTemporaryDirectory();
-    final fileName = url.split('/').last.split('?').first;
-    final savePath = '${dir.path}/$fileName';
-    await Dio().download(url, savePath);
-    return savePath;
-  } catch (e) {
-    return null;
+Future<void> downloadWithDownloader(String url, {String? fileName}) async {
+  final saveDir = await getDownloadDirectory();
+  final name = fileName ?? url.split('/').last.split('?').first;
+
+  final taskId = await FlutterDownloader.enqueue(
+    url: url,
+    savedDir: saveDir,
+    fileName: name,
+    showNotification: true,
+    openFileFromNotification: true,
+  );
+}
+
+Future<String> getDownloadDirectory() async {
+  if (Platform.isAndroid) {
+    return '/storage/emulated/0/Download';
+  } else {
+    final dir = await getApplicationDocumentsDirectory();
+    return dir.path;
   }
+}
+
+String getDirectCloudinaryUrl(String url) {
+  if (url.contains('/upload/')) {
+    return url.replaceFirst('/upload/', '/upload/fl_attachment/');
+  }
+  return url;
 }
 
 class LeaveRequestDetailPage extends StatelessWidget {
@@ -38,11 +56,17 @@ class LeaveRequestDetailPage extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
+    final List<dynamic> files = data['SupportingDocument'] ?? [];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Leave Request Details",
-          style: TextStyle(fontFamily: "NexaBold", color: Colors.white),
+          style: TextStyle(
+            fontFamily: "NexaBold",
+            color: Colors.white,
+            fontSize: 20,
+          ),
         ),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -83,82 +107,72 @@ class LeaveRequestDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             // Display supporting document if exists
-            if (data['SupportingDocument'] != null &&
-                data['SupportingDocument'].toString().isNotEmpty)
-              const Text(
-                "Supporting Document:",
-                style: TextStyle(
-                  fontFamily: "NexaBold",
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Row(
+            if (files.isNotEmpty)
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.attach_file, color: Colors.black),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      behavior:
-                          HitTestBehavior
-                              .opaque, // Ensures the whole area is clickable
-                      onTap: () async {
-                        final path = data['SupportingDocument'];
-                        if (path == null || path.isEmpty) return;
-
-                        if (path.startsWith('http')) {
-                          // Download the file first
-                          final savePath = await downloadFile(path);
-                          if (savePath != null) {
-                            final result = await OpenFile.open(savePath);
-                            if (result.type != ResultType.done) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Could not open file.')),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Download failed.')),
-                            );
-                          }
-                        } else {
-                          // It's a local file, open with OpenFile
-                          final result = await OpenFile.open(path);
-                          if (result.type != ResultType.done) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open file.')),
-                            );
-                          }
-                        }
-                      },
-                      child: Text(
-                        (() {
-                          final path = data['SupportingDocument'] ?? '';
-                          if (path.isEmpty) return '';
-                          final ext = path.split('.').last.toLowerCase();
-                          return ext == 'jpg' || ext == 'jpeg'
-                              ? 'Image File (JPG)'
-                              : ext == 'png'
-                              ? 'Image File (PNG)'
-                              : ext == 'pdf'
-                              ? 'PDF File'
-                              : ext.toUpperCase() + ' File';
-                        })(),
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  const Text(
+                    "Supporting Document:",
+                    style: TextStyle(
+                      fontFamily: "NexaBold",
+                      fontSize: 18,
+                      color: Colors.black,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  ...files.map((fileUrl) {
+                    final ext =
+                        fileUrl.toString().split('.').last.toLowerCase();
+                    final fileLabel =
+                        ext == 'jpg' || ext == 'jpeg'
+                            ? 'Image File (JPG)'
+                            : ext == 'png'
+                            ? 'Image File (PNG)'
+                            : ext == 'pdf'
+                            ? 'PDF File'
+                            : '${ext.toUpperCase()} File';
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.attach_file, color: Colors.black),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () async {
+                                String downloadUrl = fileUrl;
+                                if (downloadUrl.contains('cloudinary.com')) {
+                                  downloadUrl = getDirectCloudinaryUrl(
+                                    downloadUrl,
+                                  );
+                                }
+                                print('Downloading from: $downloadUrl');
+                                await downloadWithDownloader(downloadUrl);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  CustomSnackBar().successSnackBar(
+                                    message:
+                                        'Download started. Check your notifications.',
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                fileLabel,
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ],
               ),
-            ),
             const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -170,15 +184,15 @@ class LeaveRequestDetailPage extends StatelessWidget {
                     screenHeight,
                     screenWidth / 2.5,
                     screenWidth / 26,
-                    Colors.green, 
+                    Colors.green,
                   ),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => updateStatus(context, 'Rejected'),
                   child: leaveRequestButtonInText(
-                    'Reject', 
-                    screenHeight, 
+                    'Reject',
+                    screenHeight,
                     screenWidth / 2.5,
                     screenWidth / 26,
                     Colors.red,
@@ -210,11 +224,17 @@ class StudentLeaveDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<dynamic> files = data['SupportingDocument'] ?? [];
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Leave Request Details",
-          style: TextStyle(fontFamily: "NexaBold", color: Colors.white),
+          style: TextStyle(
+            fontFamily: "NexaBold",
+            color: Colors.white,
+            fontSize: 20,
+          ),
         ),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -255,80 +275,72 @@ class StudentLeaveDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             // Display supporting document if exists
-            if (data['SupportingDocument'] != null &&
-                data['SupportingDocument'].toString().isNotEmpty)
-              const Text(
-                "Supporting Document:",
-                style: TextStyle(
-                  fontFamily: "NexaBold",
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Row(
+            if (files.isNotEmpty)
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.attach_file, color: Colors.black),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      behavior:
-                          HitTestBehavior
-                              .opaque, // Ensures the whole area is clickable
-                      onTap: () async {
-                        final path = data['SupportingDocument'];
-                        if (path == null || path.isEmpty) return;
-
-                        if (path.startsWith('http')) {
-                          final savePath = await downloadFile(path);
-                          if (savePath != null) {
-                            final result = await OpenFile.open(savePath);
-                            if (result.type != ResultType.done) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Could not open file.')),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Download failed.')),
-                            );
-                          }
-                        } else {
-                          final result = await OpenFile.open(path);
-                          if (result.type != ResultType.done) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open file.')),
-                            );
-                          }
-                        }
-                      },
-                      child: Text(
-                        (() {
-                          final path = data['SupportingDocument'] ?? '';
-                          if (path.isEmpty) return '';
-                          final ext = path.split('.').last.toLowerCase();
-                          return ext == 'jpg' || ext == 'jpeg'
-                              ? 'Image File (JPG)'
-                              : ext == 'png'
-                              ? 'Image File (PNG)'
-                              : ext == 'pdf'
-                              ? 'PDF File'
-                              : ext.toUpperCase() + ' File';
-                        })(),
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  const Text(
+                    "Supporting Document:",
+                    style: TextStyle(
+                      fontFamily: "NexaBold",
+                      fontSize: 18,
+                      color: Colors.black,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  ...files.map((fileUrl) {
+                    final ext =
+                        fileUrl.toString().split('.').last.toLowerCase();
+                    final fileLabel =
+                        ext == 'jpg' || ext == 'jpeg'
+                            ? 'Image File (JPG)'
+                            : ext == 'png'
+                            ? 'Image File (PNG)'
+                            : ext == 'pdf'
+                            ? 'PDF File'
+                            : '${ext.toUpperCase()} File';
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.attach_file, color: Colors.black),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () async {
+                                String downloadUrl = fileUrl;
+                                if (downloadUrl.contains('cloudinary.com')) {
+                                  downloadUrl = getDirectCloudinaryUrl(
+                                    downloadUrl,
+                                  );
+                                }
+                                print('Downloading from: $downloadUrl');
+                                await downloadWithDownloader(downloadUrl);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  CustomSnackBar().successSnackBar(
+                                    message:
+                                        'Download started. Check your notifications.',
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                fileLabel,
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ],
               ),
-            ),
           ],
         ),
       ),

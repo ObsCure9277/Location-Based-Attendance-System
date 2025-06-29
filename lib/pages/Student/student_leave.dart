@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:location_based_attendance_app/pages/Admin/leave_manage.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 
 class Studentleavepage extends StatefulWidget {
@@ -25,7 +26,6 @@ class _StudentleaveState extends State<Studentleavepage> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
         title: Text(
           "Leave Request",
@@ -97,7 +97,7 @@ class _StudentleaveState extends State<Studentleavepage> {
         stream: leaveQuery.snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: SplashScreen());
           }
           final docs = snapshot.data!.docs;
           if (docs.isEmpty) {

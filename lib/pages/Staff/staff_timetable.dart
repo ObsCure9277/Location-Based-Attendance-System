@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/pages/Staff/manual_attendance.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -128,7 +129,7 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                       .snapshots(),
               builder: (context, staffSnapshot) {
                 if (!staffSnapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(child: SplashScreen());
                 }
                 final staffData =
                     staffSnapshot.data!.data() as Map<String, dynamic>;
@@ -142,7 +143,7 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                           .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return Center(child: CircularProgressIndicator());
+                      return Center(child: SplashScreen());
                     }
 
                     final docs = snapshot.data!.docs;
