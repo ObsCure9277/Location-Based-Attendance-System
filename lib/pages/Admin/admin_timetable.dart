@@ -75,7 +75,6 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
         title: Text(
           "Timetable",

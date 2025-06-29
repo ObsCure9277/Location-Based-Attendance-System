@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:location_based_attendance_app/pages/Global/initial.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
@@ -20,15 +18,6 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
   double screenWidth = 0;
   String _filterType = 'Alphabet';
   bool _ascending = true;
-
-  Future<void> logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const Initial()),
-      (route) => false,
-    );
-  }
 
   Future<void> deleteClassData(DocumentSnapshot doc) async {
     screenHeight = MediaQuery.of(context).size.height;
@@ -62,7 +51,6 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
         title: const Text(
           "Location",
@@ -135,12 +123,6 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                 MaterialPageRoute(builder: (context) => LocationForm()),
               );
             },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            color: Colors.red,
-            tooltip: 'Sign Out',
-            onPressed: () => logout(context),
           ),
         ],
       ),

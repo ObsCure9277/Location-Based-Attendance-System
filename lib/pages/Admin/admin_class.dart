@@ -1,7 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:location_based_attendance_app/pages/Global/initial.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
@@ -18,15 +17,6 @@ class _AdminclasspageState extends State<Adminclasspage> {
 
   String _filterType = 'Alphabet';
   bool _ascending = true;
-
-  Future<void> logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const Initial()),
-      (route) => false,
-    );
-  }
 
   Future<void> deleteClassData(DocumentSnapshot doc) async {
     final data = doc.data() as Map<String, dynamic>;
@@ -57,7 +47,6 @@ class _AdminclasspageState extends State<Adminclasspage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
         title: const Text(
           "Tutorial Group",

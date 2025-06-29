@@ -1,7 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:location_based_attendance_app/helpers/printing_helper.dart';
 
 class StaffDashboardpage extends StatefulWidget {
   const StaffDashboardpage({super.key});
@@ -37,6 +42,311 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
     'Absent': Colors.red,
     'Leave': Colors.orange,
   };
+
+  Future<void> exportPieChartToPdf(
+    BuildContext context,
+    List<Map<String, dynamic>> filteredRates,
+  ) async {
+    // Create a global key to identify the pie chart
+    final pieChartKey = GlobalKey();
+
+    // Current subject display text
+    final subjectText = _searchQuery.isEmpty ? 'All Subjects' : _searchQuery;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (ctx) => const AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    "Preparing chart for PDF export...",
+                  ),
+                ],
+              ),
+            ),
+      );
+      await Future.delayed(const Duration(milliseconds: 500));
+      Navigator.of(context).pop();
+
+      await showDialog(
+        context: context,
+        builder:
+            (dialogContext) => Dialog(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16.0),
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Attendance Rate by Status',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      subjectText,
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    RepaintBoundary(
+                      key: pieChartKey,
+                      child: SizedBox(
+                        height: 250,
+                        width: 250,
+                        child: PieChart(
+                          PieChartData(
+                            borderData: FlBorderData(show: false),
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 40,
+                            sections: List.generate(filteredRates.length, (i) {
+                              final data = filteredRates[i];
+                              return PieChartSectionData(
+                                color:
+                                    statusColorMap[data['status']] ??
+                                    Colors.grey,
+                                value: data['rate'],
+                                title:
+                                    '${data['status']}\n${data['rate'].toStringAsFixed(1)}%',
+                                radius: 60.0,
+                                titleStyle: TextStyle(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: List.generate(filteredRates.length, (i) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color:
+                                    statusColorMap[filteredRates[i]['status']] ??
+                                    Colors.grey,
+                                shape: BoxShape.rectangle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${filteredRates[i]['status']}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              ),
+                            )
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder:
+                                    (ctx) => const AlertDialog(
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CircularProgressIndicator(),
+                                          SizedBox(height: 16),
+                                          Text(
+                                            "Generating PDF...",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                              );
+
+                              await Future.delayed(
+                                const Duration(milliseconds: 800),
+                              );
+
+                              // Capture the chart as image
+                              final boundary =
+                                  pieChartKey.currentContext!.findRenderObject()
+                                      as RenderRepaintBoundary;
+                              final image = await boundary.toImage(
+                                pixelRatio: 1.5,
+                              );
+                              final byteData = await image.toByteData(
+                                format: ui.ImageByteFormat.png,
+                              );
+
+                              if (byteData == null) {
+                                throw Exception("Failed to get image data");
+                              }
+
+                              final pngBytes = byteData.buffer.asUint8List();
+
+                              Navigator.pop(dialogContext);
+
+                              final pdf = pw.Document();
+                              final imageProvider = pw.MemoryImage(pngBytes);
+
+                              pdf.addPage(
+                                pw.Page(
+                                  pageFormat: PdfPageFormat.a4,
+                                  build: (pw.Context context) {
+                                    return pw.Column(
+                                      crossAxisAlignment:
+                                          pw.CrossAxisAlignment.start,
+                                      children: [
+                                        pw.Header(
+                                          level: 0,
+                                          child: pw.Text(
+                                            'Attendance Status Report',
+                                            style: pw.TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: pw.FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        pw.SizedBox(height: 20),
+                                        pw.Text(
+                                          'Staff: $staffName',
+                                          style: pw.TextStyle(fontSize: 16),
+                                        ),
+                                        pw.Text(
+                                          'Subject: $subjectText',
+                                          style: pw.TextStyle(fontSize: 16),
+                                        ),
+                                        pw.Text(
+                                          'Generated Date: ${DateTime.now().toString().split(' ')[0]}',
+                                          style: pw.TextStyle(fontSize: 16),
+                                        ),
+                                        pw.SizedBox(height: 30),
+                                        pw.Center(
+                                          child: pw.Image(
+                                            imageProvider,
+                                            height: 400,
+                                          ),
+                                        ),
+                                        pw.SizedBox(height: 30),
+                                        pw.Text(
+                                          'Status Summary:',
+                                          style: pw.TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: pw.FontWeight.bold,
+                                          ),
+                                        ),
+                                        pw.SizedBox(height: 10),
+                                        ...filteredRates.map(
+                                          (rate) => pw.Text(
+                                            '${rate['status']}: ${rate['rate'].toStringAsFixed(1)}%',
+                                            style: pw.TextStyle(fontSize: 14),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              );
+
+                              // Close loading dialog
+                              Navigator.of(context).pop();
+
+                              // Save PDF using our helper
+                              await PrintingHelper.savePdfToStorage(
+                                context,
+                                pdf,
+                                'attendance_report_${DateTime.now().millisecondsSinceEpoch}',
+                              );
+                            } catch (e) {
+                              // Close dialogs in case of error
+                              try {
+                                Navigator.of(dialogContext).pop();
+                              } catch (_) {}
+
+                              try {
+                                Navigator.of(context).pop();
+                              } catch (_) {}
+
+                              print('Error generating PDF: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to generate PDF: ${e.toString()}',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                          ),
+                          child: const Text(
+                            'Generate PDF',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          )
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+      );
+    } catch (e) {
+      try {
+        Navigator.of(context).pop();
+      } catch (_) {}
+
+      print('Error in PDF export: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   // Stream for attendance status rates by subject
   Stream<List<Map<String, dynamic>>> attendanceStatusStream(
@@ -459,7 +769,16 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                     ),
                   ),
                 ),
-         
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => exportPieChartToPdf(context, filteredRates),
+                  icon: const Icon(Icons.print, color: Colors.white),
+                  label: const Text('Export Chart'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
               ],
             ),
           );
@@ -468,4 +787,3 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
     );
   }
 }
-

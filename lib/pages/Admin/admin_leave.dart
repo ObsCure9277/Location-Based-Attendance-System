@@ -23,6 +23,8 @@ class _AdminleavepageState extends State<Adminleavepage> {
     }
     leaveQuery = leaveQuery.orderBy('RequestDate', descending: !_ascending);
 
+     print('Query: Status=${_statusFilter}, Ascending=${_ascending}');
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,

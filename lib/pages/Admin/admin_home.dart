@@ -1,10 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:location_based_attendance_app/pages/Admin/admin_class.dart';
-import 'package:location_based_attendance_app/pages/Admin/admin_geofence.dart';
 import 'package:location_based_attendance_app/pages/Admin/admin_leave.dart';
-import 'package:location_based_attendance_app/pages/Admin/admin_timetable.dart';
+import 'package:location_based_attendance_app/pages/Admin/admin_profile.dart';
 
 class Adminhomepage extends StatefulWidget {
   const Adminhomepage({super.key});
@@ -26,10 +24,8 @@ class _AdminhomepageState extends State<Adminhomepage> {
   }
 
   List<IconData> navigationIcons = [
-    FontAwesomeIcons.calendarDays,
-    FontAwesomeIcons.suitcaseRolling,
-    FontAwesomeIcons.userGroup,
-    FontAwesomeIcons.mapLocationDot,
+    FontAwesomeIcons.suitcase,
+    FontAwesomeIcons.user,
   ];
 
   @override
@@ -41,10 +37,8 @@ class _AdminhomepageState extends State<Adminhomepage> {
       body: IndexedStack(
         index: currentIndex,
         children: const [
-          Admintimetablepage(),
           Adminleavepage(),
-          Adminclasspage(),
-          Admingeofencepage(),
+          AdminProfilepage(),
         ],
       ),
       bottomNavigationBar: Container(
