@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:location_based_attendance_app/pages/Staff/staff_dashboard.dart';
 import 'package:location_based_attendance_app/pages/Staff/staff_timetable.dart';
 import 'package:location_based_attendance_app/pages/Global/profile.dart';
 
@@ -25,6 +26,7 @@ class _StaffhomepageState extends State<Staffhomepage> {
 
   List<IconData> navigationIcons = [
     FontAwesomeIcons.calendarDays,
+    FontAwesomeIcons.list,
     FontAwesomeIcons.user,
   ];
 
@@ -38,6 +40,7 @@ class _StaffhomepageState extends State<Staffhomepage> {
         index: currentIndex,
         children: const [
           Stafftimetablepage(),
+          StaffDashboardpage(),
           Profilepage(),
         ],
       ),
@@ -55,7 +58,7 @@ class _StaffhomepageState extends State<Staffhomepage> {
             BoxShadow(
               color: Colors.black26,
               blurRadius: 10,
-              offset: Offset(2, 2), // changes position of shadow
+              offset: Offset(2, 2),
             ),
           ],  
         ),

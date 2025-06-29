@@ -11,7 +11,7 @@ Future<void> downloadWithDownloader(String url, {String? fileName}) async {
   final saveDir = await getDownloadDirectory();
   final name = fileName ?? url.split('/').last.split('?').first;
 
-  final taskId = await FlutterDownloader.enqueue(
+  final _ = await FlutterDownloader.enqueue(
     url: url,
     savedDir: saveDir,
     fileName: name,

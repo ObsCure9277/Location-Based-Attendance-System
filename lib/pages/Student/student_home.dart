@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:location_based_attendance_app/pages/Student/attendance_summary.dart';
-import 'package:location_based_attendance_app/pages/Student/student_leave.dart';
 import 'package:location_based_attendance_app/pages/Student/student_timetable.dart';
 import 'package:location_based_attendance_app/service/location_service.dart';
 import 'package:location_based_attendance_app/pages/Global/profile.dart';

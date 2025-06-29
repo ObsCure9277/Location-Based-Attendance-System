@@ -20,9 +20,8 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
   List<Map<String, dynamic>> students = [];
   Set<String> attendedStudentIds = {};
   bool loading = true;
-
-  String _sortType = 'Group';
   bool _ascending = true;
+  String _sortType = 'Group';
   String _searchQuery = '';
 
   // Map to cache attendance statuses
