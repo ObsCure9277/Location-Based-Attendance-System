@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:location_based_attendance_app/pages/Admin/admin_home.dart';
 import 'package:location_based_attendance_app/pages/Global/login.dart';
 import 'package:location_based_attendance_app/pages/Global/sign_up.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
@@ -20,7 +19,7 @@ class Initial extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            SizedBox(height: screenHeight / 8),
+            SizedBox(height: screenHeight / 6),
             Icon(Icons.my_location, color: Colors.white, size: 80),
             const SizedBox(height: 20),
             Text(
@@ -41,10 +40,10 @@ class Initial extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            SizedBox(height: screenHeight / 8),
+            SizedBox(height: screenHeight / 7),
             Center(
                   child: Text(
-                    "Welcome Back",
+                    "Welcome to GeoMark",
                     style: TextStyle(
                       fontSize: screenWidth / 18,
                       color: Colors.white,
@@ -76,15 +75,7 @@ class Initial extends StatelessWidget {
               child: initialButtonInText('SIGN UP', screenWidth, screenHeight),
             ),
              const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Adminhomepage()),
-                );
-              },
-              child: initialButtonInText('ADMIN', screenWidth, screenHeight),
-            ),
+            
           ],
         ),
       ),
