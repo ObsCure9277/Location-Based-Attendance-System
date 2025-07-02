@@ -9,45 +9,57 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  double screenHeight = 0;
+  double screenWidth = 0;
+
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    Future.delayed(const Duration(seconds: 2), () {
-    });
+    Future.delayed(const Duration(seconds: 2), () {});
   }
 
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.my_location, color: Colors.white, size: 80),
-            const SizedBox(height: 20),
+            Icon(
+              Icons.my_location,
+              color: Colors.white,
+              size: screenWidth * 0.2, 
+            ),
+            SizedBox(height: screenHeight * 0.025), 
             Text(
               'GeoMark',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: screenWidth * 0.08, 
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125), 
             Text(
               'No Punch, Just Presence',
               style: TextStyle(
                 fontFamily: "NexaRegular",
-                fontSize: 16,
+                fontSize: screenWidth * 0.04, 
                 color: Colors.white70,
                 fontStyle: FontStyle.italic,
               ),
             ),
-            const SizedBox(height: 40),
-            CircularProgressIndicator(color: Colors.white),
+            SizedBox(height: screenHeight * 0.05), 
+            CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: screenWidth * 0.01, 
+            ),
           ],
         ),
       ),

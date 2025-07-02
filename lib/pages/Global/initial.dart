@@ -20,39 +20,43 @@ class Initial extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: screenHeight / 6),
-            Icon(Icons.my_location, color: Colors.white, size: 80),
-            const SizedBox(height: 20),
+            Icon(
+              Icons.my_location, 
+              color: Colors.white, 
+              size: screenWidth * 0.2
+            ),
+            SizedBox(height: screenHeight * 0.025),
             Text(
               'GeoMark',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: screenWidth * 0.08,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125),
             Text(
               'No Punch, Just Presence',
               style: TextStyle(
                 fontFamily: "NexaRegular",
-                fontSize: 16,
+                fontSize: screenWidth * 0.04,
                 color: Colors.white70,
                 fontStyle: FontStyle.italic,
               ),
             ),
             SizedBox(height: screenHeight / 7),
             Center(
-                  child: Text(
-                    "Welcome to GeoMark",
-                    style: TextStyle(
-                      fontSize: screenWidth / 18,
-                      color: Colors.white,
-                      fontFamily: "NexaBold",
-                      letterSpacing: 2,
-                    ),
-                  ),
+              child: Text(
+                "Welcome to GeoMark",
+                style: TextStyle(
+                  fontSize: screenWidth / 18,
+                  color: Colors.white,
+                  fontFamily: "NexaBold",
+                  letterSpacing: screenWidth * 0.005,
                 ),
-            const SizedBox(height: 20),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.025),
             GestureDetector(
               onTap: () async {
                 Navigator.push(
@@ -64,7 +68,7 @@ class Initial extends StatelessWidget {
               },
               child: initialButtonInText('LOGIN', screenWidth, screenHeight),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125),
             GestureDetector(
               onTap: () async {
                 Navigator.push(
@@ -74,8 +78,7 @@ class Initial extends StatelessWidget {
               },
               child: initialButtonInText('SIGN UP', screenWidth, screenHeight),
             ),
-             const SizedBox(height: 10),
-            
+            SizedBox(height: screenHeight * 0.0125),
           ],
         ),
       ),

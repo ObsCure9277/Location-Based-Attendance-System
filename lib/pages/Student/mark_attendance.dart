@@ -6,10 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:location_based_attendance_app/pages/Global/splash.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:location_based_attendance_app/service/background_service.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 import 'package:location_based_attendance_app/widgets/dropdownlist.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Attendancepage extends StatefulWidget {
   const Attendancepage({super.key});
@@ -19,6 +21,8 @@ class Attendancepage extends StatefulWidget {
 }
 
 class _AttendancepageState extends State<Attendancepage> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   double screenHeight = 0;
   double screenWidth = 0;
   double? latitude;
@@ -32,9 +36,9 @@ class _AttendancepageState extends State<Attendancepage> {
   Map<String, dynamic>? currentClass;
   Map<String, dynamic>? classLocation;
   bool canMarkAttendance = false;
-
   Timer? geofenceTimer;
   bool isInsideGeofence = false;
+  bool hasNotifiedForCurrentLocation = false;
   int secondsInside = 0;
   List<Map<String, dynamic>> currentClasses = [];
   int selectedClassIndex = 0;
@@ -56,9 +60,80 @@ class _AttendancepageState extends State<Attendancepage> {
   @override
   void initState() {
     super.initState();
+    initNotifications();
     startLocationListeners();
     startGeofenceMonitoring();
     fetchCurrentClass();
+    requestBackgroundLocationPermission();
+  }
+
+  // Initialize notifications
+  Future<void> initNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings();
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Add this method to check notification settings
+  Future<bool> areNotificationsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('notificationsEnabled') ?? true;
+  }
+
+  // Show a notification when entering geofence
+  Future<void> showGeofenceNotification(String locationName) async {
+    // Check if notifications are enabled first
+    bool notificationsEnabled = await areNotificationsEnabled();
+    if (!notificationsEnabled) {
+      print('Notifications are disabled, skipping notification');
+      return; // Exit early if notifications are disabled
+    }
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'geofence_channel',
+          'Geofence Notifications',
+          channelDescription: 'Notifications for class location arrival',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '$locationName Reached',
+      'You can now mark your attendance.',
+      platformChannelSpecifics,
+    );
+  }
+
+  // Add this to your mark_attendance.dart file
+  Future<void> requestBackgroundLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    // On Android 10+ we need to request background location separately
+    if (permission == LocationPermission.whileInUse) {
+      permission = await Geolocator.requestPermission();
+      Geolocator.requestPermission();
+    }
   }
 
   void startLocationListeners() {
@@ -101,7 +176,23 @@ class _AttendancepageState extends State<Attendancepage> {
         if (distance <= radius) {
           if (!isInsideGeofence) {
             isInsideGeofence = true;
-            print('Entered geofence');
+
+            // Only send notification if attendance isn't already marked
+            if (!hasNotifiedForCurrentLocation && currentClass != null) {
+              // Check if attendance is already marked before showing notification
+              bool alreadyMarked = await isAttendanceMarked();
+              bool notificationsEnabled = await areNotificationsEnabled();
+              if (!alreadyMarked && notificationsEnabled) {
+                // Add the notificationsEnabled check
+                hasNotifiedForCurrentLocation = true;
+                showGeofenceNotification(
+                  currentClass!['locationName'] ?? 'class location',
+                );
+              } else {
+                // Still set this to true to prevent repeated checks
+                hasNotifiedForCurrentLocation = true;
+              }
+            }
           }
           setState(() {
             secondsInside += 2;
@@ -109,12 +200,41 @@ class _AttendancepageState extends State<Attendancepage> {
         } else {
           if (isInsideGeofence) {
             isInsideGeofence = false;
-            print('Exited geofence');
+            hasNotifiedForCurrentLocation = false;
           }
         }
         checkCanMarkAttendance();
       }
     });
+  }
+
+  Future<bool> isAttendanceMarked() async {
+    if (currentClass == null) return false;
+
+    try {
+      // Find the existing attendance record for this student and timetable
+      final attendanceQuery =
+          await FirebaseFirestore.instance
+              .collection('Attendance')
+              .where(
+                'studentId',
+                isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+              )
+              .where('timetableId', isEqualTo: currentClass!['id'])
+              .get();
+
+      if (attendanceQuery.docs.isEmpty) {
+        return false;
+      }
+
+      final attendanceDoc = attendanceQuery.docs.first;
+      final attendanceData = attendanceDoc.data();
+
+      // Return true if attendance is already marked as Present
+      return attendanceData['attendanceStatus'] == 'Present';
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> checkLocationStatus() async {
@@ -219,6 +339,8 @@ class _AttendancepageState extends State<Attendancepage> {
 
   // 2. Get geofence for class
   Future<void> fetchClassLocation(String locationName) async {
+    // Reset notification flag when changing locations
+    hasNotifiedForCurrentLocation = false;
     final locationSnapshot =
         await FirebaseFirestore.instance
             .collection('Location')
@@ -228,6 +350,15 @@ class _AttendancepageState extends State<Attendancepage> {
       setState(() {
         classLocation = locationSnapshot.docs.first.data();
       });
+
+      // Save geofence data for background monitoring with error handling
+      if (currentClass != null && classLocation != null) {
+        try {
+          await saveGeofenceData(currentClass!, classLocation!);
+        } catch (e) {
+          print('Error saving geofence data: $e');
+        }
+      }
     }
   }
 
@@ -285,7 +416,19 @@ class _AttendancepageState extends State<Attendancepage> {
       return;
     }
 
-    final attendanceDocId = attendanceQuery.docs.first.id;
+    final attendanceDoc = attendanceQuery.docs.first;
+    final attendanceData = attendanceDoc.data();
+    final attendanceDocId = attendanceDoc.id;
+
+    // Check if attendance is already marked as Present
+    if (attendanceData['attendanceStatus'] == 'Present') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        CustomSnackBar().errorSnackBar(
+          message: 'Attendance is already marked.',
+        ),
+      );
+      return;
+    }
 
     // Update the attendance record to present
     await FirebaseFirestore.instance
@@ -339,7 +482,6 @@ class _AttendancepageState extends State<Attendancepage> {
 
     final current = DateTime.now();
     final formattedDate = DateFormat('dd-MM-yyyy').format(current);
-    // Filter out classes that have already ended
     final availableClasses =
         currentClasses.where((cls) {
           final endTime = DateFormat(
@@ -347,8 +489,6 @@ class _AttendancepageState extends State<Attendancepage> {
           ).parse('$formattedDate ${cls['EndTime']}');
           return current.isBefore(endTime);
         }).toList();
-
-    // Ensure selectedClassIndex is valid
     if (selectedClassIndex >= availableClasses.length) {
       selectedClassIndex = 0;
     }
@@ -378,10 +518,6 @@ class _AttendancepageState extends State<Attendancepage> {
                         fontSize: screenWidth / 22,
                       ),
                     ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: const SplashScreen(),
                   ),
                 ],
               );
@@ -758,7 +894,7 @@ class _AttendancepageState extends State<Attendancepage> {
                     }
                   },
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: screenHeight / 20),
                 Text(
                   isInsideGeofence
                       ? 'Inside ${currentClass != null ? currentClass!['locationName'] ?? "geofence" : "geofence"}'

@@ -21,25 +21,16 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  double screenHeight = 0;
+  double screenWidth = 0;
+  bool isObscure = true;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
   final String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
 
-  bool isObscure = true;
-  double screenHeight = 0;
-  double screenWidth = 0;
-
   final String adminEmail = 'admin@gmail.com';
   final String adminPassword = '123456';
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
 
   Future<void> signin() async {
     // Check for hardcoded admin login
@@ -91,9 +82,17 @@ class _LoginState extends State<Login> {
       String role = '';
       if (studentDoc.exists) {
         role = 'Student';
-      } else if ((await FirebaseFirestore.instance.collection('Staff').doc(uid).get()).exists) {
+      } else if ((await FirebaseFirestore.instance
+              .collection('Staff')
+              .doc(uid)
+              .get())
+          .exists) {
         role = 'Staff';
-      } else if ((await FirebaseFirestore.instance.collection('Admin').doc(uid).get()).exists) {
+      } else if ((await FirebaseFirestore.instance
+              .collection('Admin')
+              .doc(uid)
+              .get())
+          .exists) {
         role = 'Admin';
       }
 
@@ -107,10 +106,11 @@ class _LoginState extends State<Login> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              role == 'Student'
-                  ? Studenthomepage()
-                  : role == 'Staff'
+          builder:
+              (context) =>
+                  role == 'Student'
+                      ? Studenthomepage()
+                      : role == 'Staff'
                       ? Staffhomepage()
                       : Adminhomepage(),
         ),
@@ -124,13 +124,19 @@ class _LoginState extends State<Login> {
   }
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     final bool isKeyboardVisible = KeyboardVisibilityProvider.isKeyboardVisible(
       context,
     );
-    screenHeight = MediaQuery.of(context).size.height;
-    screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -226,7 +232,10 @@ class _LoginState extends State<Login> {
                   children: [
                     Text(
                       "Don't have an account?",
-                      style: TextStyle(fontSize: 14, letterSpacing: 0.7),
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.0370,
+                        letterSpacing: screenWidth * 0.0018,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -240,9 +249,9 @@ class _LoginState extends State<Login> {
                         style: TextStyle(
                           fontFamily: "NexaBold",
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: screenWidth * 0.0375,
                           color: Colors.black,
-                          letterSpacing: 0.7,
+                          letterSpacing: screenWidth * 0.0018,
                         ),
                       ),
                     ),
@@ -252,23 +261,25 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Forgotpassword()),
-                            );
-                          },
-                          child: Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              fontFamily: "NexaBold",
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: Colors.black,
-                              letterSpacing: 0.7,
-                            ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Forgotpassword(),
                           ),
+                        );
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          fontFamily: "NexaBold",
+                          fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.0375,
+                          color: Colors.black,
+                          letterSpacing: screenWidth * 0.0018,
                         ),
+                      ),
+                    ),
                   ],
                 ),
               ],

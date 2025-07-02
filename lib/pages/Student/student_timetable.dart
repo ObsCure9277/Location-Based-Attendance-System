@@ -11,10 +11,15 @@ class Studenttimetablepage extends StatefulWidget {
 }
 
 class _StudenttimetablepageState extends State<Studenttimetablepage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  DateTime selectedDate = DateTime.now();
+  List<String> studentGroups = [];
+  String studentGroupName = '';
   String getFormattedDate(DateTime date) {
     return "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
   }
-
   String getDayName(DateTime date) {
     const days = [
       'Monday',
@@ -28,9 +33,11 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
     return days[date.weekday - 1];
   }
 
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  DateTime selectedDate = DateTime.now();
+  @override
+  void initState() {
+    super.initState();
+    fetchStudentGroups();
+  }
 
   Future<void> pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -44,15 +51,6 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
         selectedDate = picked;
       });
     }
-  }
-
-  List<String> studentGroups = [];
-  String studentGroupName = '';
-
-  @override
-  void initState() {
-    super.initState();
-    fetchStudentGroups();
   }
 
   Future<void> fetchStudentGroups() async {
@@ -71,6 +69,8 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     String formattedDate = getFormattedDate(selectedDate);
 
     return Scaffold(
@@ -80,7 +80,7 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
         title: Text(
           "Class Timetable",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05, 
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -101,15 +101,18 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
           Container(
             width: double.infinity,
             color: Colors.black87,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.02, 
+              horizontal: screenWidth * 0.04, 
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Text(
                     "${getDayName(selectedDate)}, $formattedDate",
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045, 
                       fontFamily: "NexaRegular",
                       color: Colors.white,
                     ),
@@ -120,11 +123,10 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream:
-                  firestore
-                      .collection('Timetable')
-                      .orderBy('StartTime')
-                      .snapshots(),
+              stream: firestore
+                  .collection('Timetable')
+                  .orderBy('StartTime')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Center(child: SplashScreen());
@@ -133,16 +135,14 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                 final docs = snapshot.data!.docs;
 
                 // Filter by selected date
-                final filteredDocs =
-                    docs.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final timetableGroups =
-                          data['GroupNames'] != null
-                              ? List<String>.from(data['GroupNames'])
-                              : [];
-                      return data['Date'] == formattedDate &&
-                          timetableGroups.contains(studentGroupName);
-                    }).toList();
+                final filteredDocs = docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final timetableGroups = data['GroupNames'] != null
+                      ? List<String>.from(data['GroupNames'])
+                      : [];
+                  return data['Date'] == formattedDate &&
+                      timetableGroups.contains(studentGroupName);
+                }).toList();
 
                 // Sort by StartTime (earliest first)
                 filteredDocs.sort((a, b) {
@@ -174,14 +174,14 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                 });
 
                 if (filteredDocs.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       "No Record Found !",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: screenWidth * 0.045,
                         fontFamily: "NexaBold",
                         color: Colors.black,
-                        letterSpacing: 0.7,
+                        letterSpacing: screenWidth * 0.0018, 
                       ),
                     ),
                   );
@@ -192,7 +192,7 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                   itemBuilder: (context, index) {
                     var data = filteredDocs[index];
                     return Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: EdgeInsets.all(screenWidth * 0.02), 
                       child: GestureDetector(
                         onTap: () {},
                         child: Row(
@@ -216,92 +216,83 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                                 ),
                               ],
                             ),
-                            SizedBox(width: 10),
+                            SizedBox(width: screenWidth * 0.025), 
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color:
-                                      data['Type'] == 'L'
-                                          ? Colors.black
-                                          : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: data['Type'] == 'L'
+                                      ? Colors.black
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                      screenWidth * 0.03), 
                                   border: Border.all(
-                                    color:
-                                        data['Type'] == 'L'
-                                            ? Colors.white
-                                            : Colors.black,
-                                    width: 1,
+                                    color: data['Type'] == 'L'
+                                        ? Colors.white
+                                        : Colors.black,
+                                    width: screenWidth * 0.0025, 
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
+                                  padding:
+                                      EdgeInsets.all(screenWidth * 0.03), 
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           CircleAvatar(
-                                            backgroundColor:
-                                                data['Type'] == 'L'
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                            backgroundColor: data['Type'] == 'L'
+                                                ? Colors.white
+                                                : Colors.black,
                                             child: Text(
                                               data['Type'],
                                               style: TextStyle(
-                                                color:
-                                                    data['Type'] == 'L'
-                                                        ? Colors.black
-                                                        : Colors.white,
+                                                color: data['Type'] == 'L'
+                                                    ? Colors.black
+                                                    : Colors.white,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
                                           ),
-                                          SizedBox(width: 8),
+                                          SizedBox(width: screenWidth * 0.02), 
                                           Icon(
                                             Icons.home,
-                                            color:
-                                                data['Type'] == 'L'
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                            color: data['Type'] == 'L'
+                                                ? Colors.white
+                                                : Colors.black,
+                                            size: screenWidth * 0.05, 
                                           ),
-                                          SizedBox(width: 4),
+                                          SizedBox(width: screenWidth * 0.01), 
                                           Text(
                                             data['locationName'],
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              color:
-                                                  data['Type'] == 'L'
-                                                      ? Colors.white
-                                                      : Colors.black,
+                                              color: data['Type'] == 'L'
+                                                  ? Colors.white
+                                                  : Colors.black,
                                             ),
                                           ),
                                           Spacer(),
                                           StreamBuilder<QuerySnapshot>(
-                                            stream:
-                                                FirebaseFirestore.instance
-                                                    .collection('Attendance')
-                                                    .where(
-                                                      'studentId',
-                                                      isEqualTo:
-                                                          FirebaseAuth
-                                                              .instance
-                                                              .currentUser!
-                                                              .uid,
-                                                    )
-                                                    .where(
-                                                      'timetableId',
-                                                      isEqualTo: data.id,
-                                                    )
-                                                    .snapshots(),
+                                            stream: FirebaseFirestore.instance
+                                                .collection('Attendance')
+                                                .where(
+                                                  'studentId',
+                                                  isEqualTo: FirebaseAuth
+                                                      .instance.currentUser!.uid,
+                                                )
+                                                .where(
+                                                  'timetableId',
+                                                  isEqualTo: data.id,
+                                                )
+                                                .snapshots(),
                                             builder: (
                                               context,
                                               attendanceSnapshot,
                                             ) {
                                               if (attendanceSnapshot.hasData &&
                                                   attendanceSnapshot
-                                                      .data!
-                                                      .docs
+                                                      .data!.docs
                                                       .isNotEmpty) {
                                                 final attendanceData =
                                                     attendanceSnapshot
@@ -313,22 +304,22 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                                                 final status =
                                                     attendanceData['attendanceStatus'];
                                                 if (status == 'Present') {
-                                                  return const Icon(
+                                                  return Icon(
                                                     Icons.check_circle,
                                                     color: Colors.green,
-                                                    size: 28,
+                                                    size: screenWidth * 0.07, 
                                                   );
                                                 } else if (status == 'Absent') {
-                                                  return const Icon(
+                                                  return Icon(
                                                     Icons.cancel,
                                                     color: Colors.red,
-                                                    size: 28,
+                                                    size: screenWidth * 0.07, 
                                                   );
                                                 } else if (status == 'Leave') {
-                                                  return const Icon(
+                                                  return Icon(
                                                     Icons.work,
                                                     color: Colors.orange,
-                                                    size: 28,
+                                                    size: screenWidth * 0.07, 
                                                   );
                                                 }
                                               }
@@ -337,37 +328,34 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 8),
+                                      SizedBox(height: screenHeight * 0.01), 
                                       Text(
                                         data['Subject'],
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: screenWidth * 0.04,
                                           fontWeight: FontWeight.bold,
-                                          color:
-                                              data['Type'] == 'L'
-                                                  ? Colors.white
-                                                  : Colors.black,
+                                          color: data['Type'] == 'L'
+                                              ? Colors.white
+                                              : Colors.black,
                                         ),
                                       ),
-                                      SizedBox(height: 6),
+                                      SizedBox(height: screenHeight * 0.008),
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.person,
-                                            size: 16,
-                                            color:
-                                                data['Type'] == 'L'
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                            size: screenWidth * 0.04, 
+                                            color: data['Type'] == 'L'
+                                                ? Colors.white
+                                                : Colors.black,
                                           ),
-                                          SizedBox(width: 4),
+                                          SizedBox(width: screenWidth * 0.01), 
                                           Text(
                                             data['Lecturer'],
                                             style: TextStyle(
-                                              color:
-                                                  data['Type'] == 'L'
-                                                      ? Colors.white
-                                                      : Colors.black,
+                                              color: data['Type'] == 'L'
+                                                  ? Colors.white
+                                                  : Colors.black,
                                             ),
                                           ),
                                         ],

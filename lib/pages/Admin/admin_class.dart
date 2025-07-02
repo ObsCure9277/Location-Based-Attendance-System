@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
@@ -13,10 +12,11 @@ class Adminclasspage extends StatefulWidget {
 }
 
 class _AdminclasspageState extends State<Adminclasspage> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+  double screenHeight = 0;
+  double screenWidth = 0;
   String _filterType = 'Alphabet';
   bool _ascending = true;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> deleteClassData(DocumentSnapshot doc) async {
     final data = doc.data() as Map<String, dynamic>;
@@ -45,13 +45,16 @@ class _AdminclasspageState extends State<Adminclasspage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
+        title: Text(
           "Tutorial Group",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -78,39 +81,51 @@ class _AdminclasspageState extends State<Adminclasspage> {
             },
             itemBuilder:
                 (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Alphabet',
                     child: Text(
                       'Sort by Group Name',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035,
+                      ),
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'StudentNumber',
                     child: Text(
                       'Sort by Student Number',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035,
+                      ),
                     ),
                   ),
                   const PopupMenuDivider(),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Ascending',
                     child: Text(
                       'Ascending',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035,
+                      ),
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Descending',
                     child: Text(
                       'Descending',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035,
+                      ),
                     ),
                   ),
                 ],
           ),
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, size: screenWidth * 0.06),
             color: Colors.white,
             tooltip: 'Add Tutorial Group',
             onPressed: () {
@@ -152,13 +167,14 @@ class _AdminclasspageState extends State<Adminclasspage> {
           });
 
           if (sortedDocs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No Class Found !",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: screenWidth * 0.045,
                   fontFamily: "NexaBold",
                   color: Colors.black,
+                  letterSpacing: screenWidth * 0.0018,
                 ),
               ),
             );
@@ -170,7 +186,7 @@ class _AdminclasspageState extends State<Adminclasspage> {
               var data = sortedDocs[index];
               final students = List<String>.from(data['Students'] ?? []);
               return Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(screenWidth * 0.02),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -183,11 +199,14 @@ class _AdminclasspageState extends State<Adminclasspage> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white, width: 1),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: screenWidth * 0.0025,
+                      ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(screenWidth * 0.04),
                       child: Row(
                         children: [
                           Expanded(
@@ -196,19 +215,19 @@ class _AdminclasspageState extends State<Adminclasspage> {
                               children: [
                                 Text(
                                   data['GroupName'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.045,
                                     fontFamily: "NexaBold",
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 2,
+                                    letterSpacing: screenWidth * 0.005,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: screenHeight * 0.005),
                                 Text(
                                   "${students.length} student${students.length == 1 ? '' : 's'}",
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.04,
                                     fontFamily: "NexaRegular",
                                     color: Colors.white,
                                   ),
@@ -217,7 +236,11 @@ class _AdminclasspageState extends State<Adminclasspage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: screenWidth * 0.06,
+                            ),
                             onPressed: () async {
                               await deleteClassData(data);
                               ScaffoldMessenger.of(context).showSnackBar(

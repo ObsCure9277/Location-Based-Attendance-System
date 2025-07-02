@@ -12,6 +12,11 @@ class Stafftimetablepage extends StatefulWidget {
 }
 
 class _StafftimetablepageState extends State<Stafftimetablepage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  DateTime selectedDate = DateTime.now();
+  String staffName = '';
   String getFormattedDate(DateTime date) {
     return "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
   }
@@ -29,10 +34,11 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
     return days[date.weekday - 1];
   }
 
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  DateTime selectedDate = DateTime.now();
-  String staffName = '';
+  @override
+  void initState() {
+    super.initState();
+    fetchStaffName();
+  }
 
   Future<void> pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -48,16 +54,9 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchStaffName();
-  }
-
   Future<void> fetchStaffName() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Assuming you store staff name in the Staff collection under 'name'
       final doc =
           await FirebaseFirestore.instance
               .collection('Staff')
@@ -71,10 +70,12 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     String formattedDate = getFormattedDate(selectedDate);
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return Container();
 
+    if (user == null) return Container();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -82,7 +83,7 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
         title: Text(
           "Class Timetable",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -103,15 +104,18 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
           Container(
             width: double.infinity,
             color: Colors.black87,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.02,
+              horizontal: screenWidth * 0.04,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Text(
                     "${getDayName(selectedDate)}, $formattedDate",
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
                       fontFamily: "NexaRegular",
                       color: Colors.white,
                     ),
@@ -157,46 +161,15 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                   data['Staff'] == staffName);
                         }).toList();
 
-                    // Sort by StartTime (earliest first)
-                    filteredDocs.sort((a, b) {
-                      final aTime =
-                          (a.data() as Map<String, dynamic>)['StartTime']
-                              as String;
-                      final bTime =
-                          (b.data() as Map<String, dynamic>)['StartTime']
-                              as String;
-
-                      // Parse time string to DateTime for comparison
-                      TimeOfDay parseTime(String timeStr) {
-                        final parts = timeStr.split(' ');
-                        final hm = parts[0].split(':');
-                        int hour = int.parse(hm[0]);
-                        final minute = int.parse(hm[1]);
-                        final isPM =
-                            parts.length > 1 && parts[1].toUpperCase() == 'PM';
-                        if (isPM && hour != 12) hour += 12;
-                        if (!isPM && hour == 12) hour = 0;
-                        return TimeOfDay(hour: hour, minute: minute);
-                      }
-
-                      final aParsed = parseTime(aTime);
-                      final bParsed = parseTime(bTime);
-
-                      if (aParsed.hour != bParsed.hour) {
-                        return aParsed.hour.compareTo(bParsed.hour);
-                      }
-                      return aParsed.minute.compareTo(bParsed.minute);
-                    });
-
                     if (filteredDocs.isEmpty) {
-                      return const Center(
+                      return Center(
                         child: Text(
                           "No Record Found !",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: screenWidth * 0.045,
                             fontFamily: "NexaBold",
                             color: Colors.black,
-                            letterSpacing: 0.7,
+                            letterSpacing: screenWidth * 0.0018,
                           ),
                         ),
                       );
@@ -207,7 +180,7 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                       itemBuilder: (context, index) {
                         var data = filteredDocs[index];
                         return Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: EdgeInsets.all(screenWidth * 0.02),
                           child: GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -243,7 +216,7 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(width: 10),
+                                SizedBox(width: screenWidth * 0.025),
                                 Expanded(
                                   child: Container(
                                     decoration: BoxDecoration(
@@ -251,17 +224,21 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                           data['Type'] == 'L'
                                               ? Colors.black
                                               : Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(
+                                        screenWidth * 0.03,
+                                      ),
                                       border: Border.all(
                                         color:
                                             data['Type'] == 'L'
                                                 ? Colors.white
                                                 : Colors.black,
-                                        width: 1,
+                                        width: screenWidth * 0.0025,
                                       ),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
+                                      padding: EdgeInsets.all(
+                                        screenWidth * 0.03,
+                                      ),
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -284,15 +261,20 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(width: 8),
+                                              SizedBox(
+                                                width: screenWidth * 0.02,
+                                              ),
                                               Icon(
                                                 Icons.home,
                                                 color:
                                                     data['Type'] == 'L'
                                                         ? Colors.white
                                                         : Colors.black,
+                                                size: screenWidth * 0.05,
                                               ),
-                                              SizedBox(width: 4),
+                                              SizedBox(
+                                                width: screenWidth * 0.01,
+                                              ),
                                               Text(
                                                 data['locationName'],
                                                 style: TextStyle(
@@ -306,11 +288,11 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                               Spacer(),
                                             ],
                                           ),
-                                          SizedBox(height: 8),
+                                          SizedBox(height: screenHeight * 0.01),
                                           Text(
                                             data['Subject'],
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: screenWidth * 0.04,
                                               fontWeight: FontWeight.bold,
                                               color:
                                                   data['Type'] == 'L'
@@ -318,18 +300,22 @@ class _StafftimetablepageState extends State<Stafftimetablepage> {
                                                       : Colors.black,
                                             ),
                                           ),
-                                          SizedBox(height: 6),
+                                          SizedBox(
+                                            height: screenHeight * 0.008,
+                                          ),
                                           Row(
                                             children: [
                                               Icon(
                                                 Icons.person,
-                                                size: 16,
+                                                size: screenWidth * 0.04,
                                                 color:
                                                     data['Type'] == 'L'
                                                         ? Colors.white
                                                         : Colors.black,
                                               ),
-                                              SizedBox(width: 4),
+                                              SizedBox(
+                                                width: screenWidth * 0.01,
+                                              ),
                                               Text(
                                                 data['Lecturer'],
                                                 style: TextStyle(

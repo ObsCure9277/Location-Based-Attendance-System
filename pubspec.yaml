@@ -61,6 +61,11 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   share_plus: ^11.0.0
+  flutter_local_notifications: ^19.3.0
+  flutter_local_notifications_platform_interface: ^9.1.0
+  timezone: ^0.10.1
+  workmanager: ^0.7.0
+  toggle_switch: ^2.3.0
 
 dev_dependencies:
   flutter_test:

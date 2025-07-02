@@ -6,6 +6,7 @@ import 'package:location_based_attendance_app/pages/Admin/admin_geofence.dart';
 import 'package:location_based_attendance_app/pages/Admin/admin_timetable.dart';
 import 'package:location_based_attendance_app/pages/Global/initial.dart';
 import 'package:location_based_attendance_app/widgets/field.dart';
+import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 
 class AdminProfilepage extends StatefulWidget {
   const AdminProfilepage({super.key});
@@ -43,7 +44,7 @@ class _ProfilepageState extends State<AdminProfilepage> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
         title: const Text(
-          "Admin Dashboard",
+          "Admin Account",
           style: TextStyle(
             fontSize: 20,
             fontFamily: "NexaBold",
@@ -59,6 +60,17 @@ class _ProfilepageState extends State<AdminProfilepage> {
         ),
         child: Column(
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                profileSectionTitle(
+                  "Admin Management",
+                  screenHeight / 3,
+                  screenWidth,
+                  screenWidth * 0.05,
+                ),
+              ],
+            ),
             buildMenuTile(
               icon: FontAwesomeIcons.calendarDays,
               title: 'Timetable',
@@ -101,6 +113,14 @@ class _ProfilepageState extends State<AdminProfilepage> {
                 );
               },
             ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+              ),
+              child: Divider(
+                color: Colors.black,
+                thickness: screenWidth * 0.0025,
+              ),
+            ),
             buildMenuTile(
               icon: Icons.logout,
               title: 'Logout',
@@ -109,6 +129,14 @@ class _ProfilepageState extends State<AdminProfilepage> {
               onTap: () {
                 logout(context);
               },
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+              ),
+              child: Divider(
+                color: Colors.black,
+                thickness: screenWidth * 0.0025,
+              ),
             ),
           ],
         ),

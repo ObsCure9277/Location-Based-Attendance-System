@@ -12,17 +12,13 @@ class Admingeofencepage extends StatefulWidget {
 }
 
 class _AdmingeofencepageState extends State<Admingeofencepage> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   double screenHeight = 0;
   double screenWidth = 0;
   String _filterType = 'Alphabet';
   bool _ascending = true;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> deleteClassData(DocumentSnapshot doc) async {
-    screenHeight = MediaQuery.of(context).size.height;
-    screenWidth = MediaQuery.of(context).size.width;
-
     final data = doc.data() as Map<String, dynamic>;
     final groupName = data['GroupName'] ?? '';
     final students = List<String>.from(data['Students'] ?? []);
@@ -49,13 +45,16 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
+        title: Text(
           "Location",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05, 
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -82,39 +81,54 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
             },
             itemBuilder:
                 (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Alphabet',
                     child: Text(
                       'Sort by Name',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Radius',
                     child: Text(
                       'Sort by Radius',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
                     ),
                   ),
                   const PopupMenuDivider(),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Ascending',
                     child: Text(
                       'Ascending',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Descending',
                     child: Text(
                       'Descending',
-                      style: TextStyle(fontFamily: 'NexaBold'),
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
                     ),
                   ),
                 ],
           ),
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(
+              Icons.add,
+              size: screenWidth * 0.06, // Added responsive size
+            ),
             color: Colors.white,
             tooltip: 'Add Location',
             onPressed: () {
@@ -161,13 +175,15 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
           });
 
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No Location Found !",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: screenWidth * 0.045, 
                   fontFamily: "NexaBold",
                   color: Colors.black,
+                  letterSpacing:
+                      screenWidth * 0.0018, 
                 ),
               ),
             );
@@ -178,7 +194,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
             itemBuilder: (context, index) {
               var data = docs[index];
               return Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(screenWidth * 0.02), 
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -191,11 +207,16 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white, width: 1),
+                      borderRadius: BorderRadius.circular(
+                        screenWidth * 0.03,
+                      ), 
+                      border: Border.all(
+                        color: Colors.white,
+                        width: screenWidth * 0.0025, 
+                      ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(screenWidth * 0.04), 
                       child: Row(
                         children: [
                           Expanded(
@@ -204,19 +225,19 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                               children: [
                                 Text(
                                   data['locationName'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.045, 
                                     fontFamily: "NexaBold",
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 2,
+                                    letterSpacing: screenWidth * 0.005, 
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: screenHeight * 0.005), 
                                 Text(
                                   "Radius: ${((data['radius'] ?? 0) is num ? (data['radius'] ?? 0).round() : int.tryParse(data['radius'].toString()) ?? 0)} m",
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.04, 
                                     fontFamily: "NexaRegular",
                                     color: Colors.white,
                                   ),
@@ -225,7 +246,11 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: screenWidth * 0.06, // Added responsive size
+                            ),
                             onPressed: () async {
                               await FirebaseFirestore.instance
                                   .collection('Location')

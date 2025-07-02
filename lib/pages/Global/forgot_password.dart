@@ -13,10 +13,9 @@ class Forgotpassword extends StatefulWidget {
 }
 
 class _ForgotpasswordState extends State<Forgotpassword> {
-  TextEditingController email = TextEditingController();
-
   double screenHeight = 0;
   double screenWidth = 0;
+  final email = TextEditingController();
 
   resetpassword() async {
     await FirebaseAuth.instance.sendPasswordResetEmail(
@@ -35,7 +34,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
         title: Text(
           widget.fromProfile ? "Reset Password" : "Forgot Password",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05, 
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -43,11 +42,11 @@ class _ForgotpasswordState extends State<Forgotpassword> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(screenWidth * 0.05), // Was 20.0
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125), // Was 10
             customField(
               "Enter your registered email",
               email,
@@ -55,7 +54,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
               screenHeight,
               screenWidth,
             ),
-            SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125), // Was 10
             GestureDetector(
               onTap: () {
                 FocusScope.of(context).unfocus();

@@ -13,11 +13,16 @@ class Studentleavepage extends StatefulWidget {
 }
 
 class _StudentleaveState extends State<Studentleavepage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
   bool _ascending = false;
   String _statusFilter = 'All';
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     Query leaveQuery = FirebaseFirestore.instance.collection('LeaveRequests');
     if (_statusFilter != 'All') {
       leaveQuery = leaveQuery.where('Status', isEqualTo: _statusFilter);
@@ -30,7 +35,7 @@ class _StudentleaveState extends State<Studentleavepage> {
         title: Text(
           "Leave Request",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -52,30 +57,66 @@ class _StudentleaveState extends State<Studentleavepage> {
               });
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'All',
-                child: Text('All Status', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'All Status', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                  )
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'Pending',
-                child: Text('Pending', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'Pending', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                  )
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'Approved',
-                child: Text('Approved', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'Approved', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                  )
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'Rejected',
-                child: Text('Rejected', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'Rejected', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                    )
+                  ),
               ),
               const PopupMenuDivider(),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'Ascending',
-                child: Text('Request Date Ascending', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'Request Date Ascending', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                  )
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'Descending',
-                child: Text('Request Date Descending', style: TextStyle(fontFamily: 'NexaBold')),
+                child: Text(
+                  'Request Date Descending', 
+                  style: TextStyle(
+                    fontFamily: 'NexaBold',
+                    fontSize: screenWidth * 0.035,
+                  )
+                ),
               ),
             ],
           ),
@@ -101,20 +142,20 @@ class _StudentleaveState extends State<Studentleavepage> {
           }
           final docs = snapshot.data!.docs;
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No Leave Request Found !",
                 style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: "NexaBold",
-                  color: Colors.black,
-                  letterSpacing: 0.7,
+                  fontSize: screenWidth * 0.045, 
+      fontFamily: "NexaBold",
+      color: Colors.black,
+      letterSpacing: screenWidth * 0.0018,
                 ),
               ),
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(screenWidth * 0.04),
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
@@ -132,12 +173,12 @@ class _StudentleaveState extends State<Studentleavepage> {
                 },
                 child: Card(
                   color: Colors.black,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: EdgeInsets.only(bottom: screenHeight * 0.02),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -156,16 +197,16 @@ class _StudentleaveState extends State<Studentleavepage> {
                                   : data['Status'] == 'Rejected'
                                       ? Colors.red
                                       : Colors.orange,
-                              size: 20,
+                              size: screenWidth * 0.05,
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: screenWidth * 0.025),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 (data['Status'] ?? 'Pending').toString(),
                                 style: TextStyle(
                                   fontFamily: "NexaBold",
-                                  fontSize: 18,
+                                  fontSize: screenWidth * 0.045,
                                   color: data['Status'] == 'Approved'
                                       ? Colors.green
                                       : data['Status'] == 'Rejected'
@@ -176,22 +217,24 @@ class _StudentleaveState extends State<Studentleavepage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: screenHeight * 0.01),
                         Row(
                           children: [
                             Text(
                               "From : ",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontFamily: "NexaRegular",
                                 color: Colors.white,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                             Text(
                               "${data['StartDate'] ?? ''}",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: "NexaRegular",
                                 color: Colors.white,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                           ],
@@ -201,24 +244,27 @@ class _StudentleaveState extends State<Studentleavepage> {
                           children: [
                             Text(
                               "To      : ",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: "NexaRegular",
                                 color: Colors.white,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                             Text(
                               "${data['EndDate'] ?? ''}",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: "NexaRegular",
                                 color: Colors.white,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                             const Spacer(),
                             Text(
                               "${data['RequestDate'] ?? ''}",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: "NexaRegular",
                                 color: Colors.white,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                           ],

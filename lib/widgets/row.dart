@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-Widget detailRow(String title, String value) {
+Widget detailRow(
+  String title, 
+  String value
+) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

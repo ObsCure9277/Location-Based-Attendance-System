@@ -28,12 +28,6 @@ class _VerifyemailState extends State<Verifyemail> {
     }
   }
 
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-  }
-
   Future<void> checkEmailVerified() async {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -89,6 +83,12 @@ class _VerifyemailState extends State<Verifyemail> {
   }
 
   @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) =>
       isEmailVerified
           ? const KeyboardVisibilityProvider(child: Login())
@@ -96,7 +96,10 @@ class _VerifyemailState extends State<Verifyemail> {
             appBar: AppBar(
               title: Text(
                 'Email Verification',
-                style: TextStyle(fontFamily: "NexaBold"),
+                style: TextStyle(
+                  fontFamily: "NexaBold",
+                  fontSize: 20,
+                ),
               ),
               centerTitle: false,
             ),

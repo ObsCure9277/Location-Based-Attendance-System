@@ -7,6 +7,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'dart:io';
 
+double screenHeight = 0;
+double screenWidth = 0;
+
 Future<void> downloadWithDownloader(String url, {String? fileName}) async {
   final saveDir = await getDownloadDirectory();
   final name = fileName ?? url.split('/').last.split('?').first;
@@ -53,19 +56,19 @@ class LeaveRequestDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
 
     final List<dynamic> files = data['SupportingDocument'] ?? [];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Leave Request Details",
           style: TextStyle(
             fontFamily: "NexaBold",
             color: Colors.white,
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
           ),
         ),
         backgroundColor: Colors.black,
@@ -73,53 +76,56 @@ class LeaveRequestDetailPage extends StatelessWidget {
       ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(screenWidth * 0.06),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             detailRow("Status", ''),
             detailRow('', data['Status'] ?? 'Pending'),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Student Name", ''),
             detailRow('', data['StudentName'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Start Date", ''),
             detailRow("", data['StartDate'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("End Date", ''),
             detailRow("", data['EndDate'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Request Date", ''),
             detailRow("", data['RequestDate'] ?? ''),
-            const SizedBox(height: 4),
-            const Text(
+            SizedBox(height: screenHeight * 0.005),
+            Text(
               "Reason:",
               style: TextStyle(
                 fontFamily: "NexaBold",
-                fontSize: 18,
+                fontSize: screenWidth * 0.045,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             Text(
               data['Reason'] ?? '',
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              style: TextStyle(
+                fontSize: screenWidth * 0.04,
+                color: Colors.black,
+              ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125),
             // Display supporting document if exists
             if (files.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Supporting Document:",
                     style: TextStyle(
                       fontFamily: "NexaBold",
-                      fontSize: 18,
+                      fontSize: screenWidth * 0.045,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: screenHeight * 0.005),
                   ...files.map((fileUrl) {
                     final ext =
                         fileUrl.toString().split('.').last.toLowerCase();
@@ -132,12 +138,16 @@ class LeaveRequestDetailPage extends StatelessWidget {
                             ? 'PDF File'
                             : '${ext.toUpperCase()} File';
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: EdgeInsets.only(bottom: screenHeight * 0.01),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.attach_file, color: Colors.black),
-                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.attach_file,
+                            color: Colors.black,
+                            size: screenWidth * 0.05,
+                          ),
+                          SizedBox(width: screenWidth * 0.02),
                           Expanded(
                             child: GestureDetector(
                               behavior: HitTestBehavior.opaque,
@@ -159,9 +169,12 @@ class LeaveRequestDetailPage extends StatelessWidget {
                               },
                               child: Text(
                                 fileLabel,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.blue,
                                   decoration: TextDecoration.underline,
+                                  fontSize:
+                                      screenWidth *
+                                      0.035, // Added responsive size
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -224,16 +237,18 @@ class StudentLeaveDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     final List<dynamic> files = data['SupportingDocument'] ?? [];
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Leave Request Details",
           style: TextStyle(
             fontFamily: "NexaBold",
             color: Colors.white,
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
           ),
         ),
         backgroundColor: Colors.black,
@@ -241,53 +256,56 @@ class StudentLeaveDetailPage extends StatelessWidget {
       ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(screenWidth * 0.06),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             detailRow("Status", ''),
             detailRow('', data['Status'] ?? 'Pending'),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Student Name", ''),
             detailRow('', data['StudentName'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Start Date", ''),
             detailRow("", data['StartDate'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("End Date", ''),
             detailRow("", data['EndDate'] ?? ''),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             detailRow("Request Date", ''),
             detailRow("", data['RequestDate'] ?? ''),
-            const SizedBox(height: 4),
-            const Text(
+            SizedBox(height: screenHeight * 0.005),
+            Text(
               "Reason:",
               style: TextStyle(
                 fontFamily: "NexaBold",
-                fontSize: 18,
+                fontSize: screenWidth * 0.045,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: screenHeight * 0.005),
             Text(
               data['Reason'] ?? '',
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              style: TextStyle(
+                fontSize: screenWidth * 0.04,
+                color: Colors.black,
+              ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.0125),
             // Display supporting document if exists
             if (files.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Supporting Document:",
                     style: TextStyle(
                       fontFamily: "NexaBold",
-                      fontSize: 18,
+                      fontSize: screenWidth * 0.045,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: screenHeight * 0.005),
                   ...files.map((fileUrl) {
                     final ext =
                         fileUrl.toString().split('.').last.toLowerCase();
@@ -300,12 +318,16 @@ class StudentLeaveDetailPage extends StatelessWidget {
                             ? 'PDF File'
                             : '${ext.toUpperCase()} File';
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: EdgeInsets.only(bottom: screenHeight * 0.01),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.attach_file, color: Colors.black),
-                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.attach_file,
+                            color: Colors.black,
+                            size: screenWidth * 0.05,
+                          ),
+                          SizedBox(width: screenWidth * 0.02),
                           Expanded(
                             child: GestureDetector(
                               behavior: HitTestBehavior.opaque,
@@ -327,9 +349,12 @@ class StudentLeaveDetailPage extends StatelessWidget {
                               },
                               child: Text(
                                 fileLabel,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.blue,
                                   decoration: TextDecoration.underline,
+                                  fontSize:
+                                      screenWidth *
+                                      0.035, // Added responsive size
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),

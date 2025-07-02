@@ -17,6 +17,8 @@ class ManualAttendancepage extends StatefulWidget {
 }
 
 class _ManualAttendancepageState extends State<ManualAttendancepage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
   List<Map<String, dynamic>> students = [];
   Set<String> attendedStudentIds = {};
   bool loading = true;
@@ -87,11 +89,12 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
 
   Future<void> setAttendance(String studentId, String status) async {
     // Find the attendance record for this student and timetable
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Attendance')
-        .where('studentId', isEqualTo: studentId)
-        .where('timetableId', isEqualTo: widget.timetableId)
-        .get();
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('Attendance')
+            .where('studentId', isEqualTo: studentId)
+            .where('timetableId', isEqualTo: widget.timetableId)
+            .get();
 
     if (snapshot.docs.isNotEmpty) {
       final docRef = snapshot.docs.first.reference;
@@ -105,7 +108,7 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
         } else {
           attendedStudentIds.remove(studentId);
         }
-        
+
         attendanceStatusMap[studentId] = status;
       });
     }
@@ -131,17 +134,18 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
       });
     }
     if (_searchQuery.isNotEmpty) {
-      sorted = sorted
-          .where((student) =>
-              student['name']
-                  .toString()
-                  .toLowerCase()
-                  .contains(_searchQuery.toLowerCase()) ||
-              student['group']
-                  .toString()
-                  .toLowerCase()
-                  .contains(_searchQuery.toLowerCase()))
-          .toList();
+      sorted =
+          sorted
+              .where(
+                (student) =>
+                    student['name'].toString().toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    student['group'].toString().toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ),
+              )
+              .toList();
     }
     return sorted;
   }
@@ -151,12 +155,15 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Timetable Details',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05, 
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -165,9 +172,10 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(
+            icon: Icon(
               Icons.filter_list,
               color: Colors.white,
+              size: screenWidth * 0.06, 
             ),
             onSelected: (value) {
               if (value == 'Group') {
@@ -188,218 +196,286 @@ class _ManualAttendancepageState extends State<ManualAttendancepage> {
                 });
               }
             },
-            itemBuilder: (context) => [
-              if (!isSortByGroupHidden)
-                const PopupMenuItem(
-                  value: 'Group',
-                  child: Text(
-                    'Sort by Group',
-                    style: TextStyle(fontFamily: 'NexaBold'),
+            itemBuilder:
+                (context) => [
+                  if (!isSortByGroupHidden)
+                    PopupMenuItem(
+                      value: 'Group',
+                      child: Text(
+                        'Sort by Group',
+                        style: TextStyle(
+                          fontFamily: 'NexaBold',
+                          fontSize:
+                              screenWidth * 0.035, // Added responsive size
+                        ),
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'Alphabet',
+                    child: Text(
+                      'Sort by Name',
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
+                    ),
                   ),
-                ),
-              const PopupMenuItem(
-                value: 'Alphabet',
-                child: Text(
-                  'Sort by Name',
-                  style: TextStyle(fontFamily: 'NexaBold'),
-                ),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'Ascending',
-                child: Text(
-                  'Ascending',
-                  style: TextStyle(fontFamily: 'NexaBold'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'Descending',
-                child: Text(
-                  'Descending',
-                  style: TextStyle(fontFamily: 'NexaBold'),
-                ),
-              ),
-            ],
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'Ascending',
+                    child: Text(
+                      'Ascending',
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, // Added responsive size
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'Descending',
+                    child: Text(
+                      'Descending',
+                      style: TextStyle(
+                        fontFamily: 'NexaBold',
+                        fontSize: screenWidth * 0.035, 
+                      ),
+                    ),
+                  ),
+                ],
           ),
         ],
       ),
-      body: loading
-          ? const Center(child: SplashScreen())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Subject: ',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+      body:
+          loading
+              ? const Center(child: SplashScreen())
+              : ListView(
+                padding: EdgeInsets.all(screenWidth * 0.04), 
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Subject: ',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.045,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: '${widget.timetableData['Subject']}',
-                            style: const TextStyle(
-                              fontSize: 16,
+                            TextSpan(
+                              text: '${widget.timetableData['Subject']}',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.04, 
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Lecturer: ',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '${widget.timetableData['Lecturer']}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Location: ',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '${widget.timetableData['locationName']}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: 'Time: ',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          TextSpan(
-                            text:
-                                '${widget.timetableData['StartTime']} - ${widget.timetableData['EndTime']}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search Student by Name/Group',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Student:',
-                  style: TextStyle(
-                    fontFamily: 'NexaBold',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                ...sortedStudents.map(
-                  (student) => ListTile(
-                    title: Text(
-                      student['name'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text('Tutorial Group: ${student['group']}'),
-                    trailing: DropdownButton<String>(
-                      value: ['Absent', 'Present', 'Leave'].contains(getStudentStatus(student['id']))
-                          ? getStudentStatus(student['id'])
-                          : 'Absent',
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'Absent', 
-                          child: Text(
-                            'Absent',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              color: Colors.red,
-                            )
-                          )
+                          ],
                         ),
-                        DropdownMenuItem(value: 'Present', 
-                          child: Text(
-                            'Present',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              color: Colors.green,
-                            )
-                          )),
-                        DropdownMenuItem(value: 'Leave', 
-                          child: Text(
-                            'Leave',
-                            style: TextStyle(
-                              fontFamily: 'NexaBold',
-                              color: Colors.orange,
-                            )
-                          )),
-                      ],
-                      onChanged: (status) async {
-                        if (status != null) {
-                          String fixedStatus = status[0].toUpperCase() + status.substring(1).toLowerCase();
-                          await setAttendance(student['id'], fixedStatus);
-                        }
+                      ),
+                      SizedBox(height: screenHeight * 0.005), 
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Lecturer: ',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.045, 
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${widget.timetableData['Lecturer']}',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.04, 
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.005),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Location: ',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.045, 
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${widget.timetableData['locationName']}',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.04, 
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.005), 
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Time: ',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.045,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  '${widget.timetableData['StartTime']} - ${widget.timetableData['EndTime']}',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.04, 
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02), 
+                    ],
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.01,
+                    ), 
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search Student by Name/Group',
+                        hintStyle: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                        ), 
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: screenWidth * 0.05, 
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            screenWidth * 0.03,
+                          ), 
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: screenWidth * 0.03,
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                      ), 
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
                       },
                     ),
                   ),
-                ),
-                if (students.isEmpty)
-                  const Text('No students found for this group.'),
-              ],
-            ),
+                  SizedBox(height: screenHeight * 0.02), 
+                  Text(
+                    'Student:',
+                    style: TextStyle(
+                      fontFamily: 'NexaBold',
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth * 0.05, 
+                    ),
+                  ),
+                  ...sortedStudents.map(
+                    (student) => ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical:
+                            screenHeight * 0.005, 
+                        horizontal:
+                            screenWidth * 0.01,
+                      ),
+                      title: Text(
+                        student['name'],
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.04, 
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Tutorial Group: ${student['group']}',
+                        style: TextStyle(
+                          fontSize:
+                              screenWidth * 0.035, 
+                        ),
+                      ),
+                      trailing: DropdownButton<String>(
+                        value:
+                            [
+                                  'Absent',
+                                  'Present',
+                                  'Leave',
+                                ].contains(getStudentStatus(student['id']))
+                                ? getStudentStatus(student['id'])
+                                : 'Absent',
+                        items: [
+                          DropdownMenuItem(
+                            value: 'Absent',
+                            child: Text(
+                              'Absent',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontSize:
+                                    screenWidth *
+                                    0.035, // Added responsive size
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Present',
+                            child: Text(
+                              'Present',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontSize:
+                                    screenWidth *
+                                    0.035, // Added responsive size
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Leave',
+                            child: Text(
+                              'Leave',
+                              style: TextStyle(
+                                fontFamily: 'NexaBold',
+                                fontSize:
+                                    screenWidth *
+                                    0.035, 
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (status) async {
+                          if (status != null) {
+                            String fixedStatus =
+                                status[0].toUpperCase() +
+                                status.substring(1).toLowerCase();
+                            await setAttendance(student['id'], fixedStatus);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  if (students.isEmpty)
+                    Text(
+                      'No students found for this group.',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04, 
+                      ),
+                    ),
+                ],
+              ),
     );
   }
 

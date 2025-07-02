@@ -5,8 +5,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:location_based_attendance_app/pages/Global/forgot_password.dart';
 import 'package:location_based_attendance_app/pages/Global/initial.dart';
 import 'package:location_based_attendance_app/pages/Global/profile_details.dart';
+import 'package:location_based_attendance_app/pages/Global/settings.dart';
 import 'package:location_based_attendance_app/pages/Student/student_leave.dart';
 import 'package:location_based_attendance_app/widgets/field.dart';
+import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 
 class Profilepage extends StatefulWidget {
   const Profilepage({super.key});
@@ -30,7 +32,11 @@ class _ProfilepageState extends State<Profilepage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       // Try Staff first
-      final staffDoc = await FirebaseFirestore.instance.collection('Staff').doc(user.uid).get();
+      final staffDoc =
+          await FirebaseFirestore.instance
+              .collection('Staff')
+              .doc(user.uid)
+              .get();
       if (staffDoc.exists) {
         setState(() {
           selectedRole = 'Staff';
@@ -38,7 +44,11 @@ class _ProfilepageState extends State<Profilepage> {
         return;
       }
       // Try Student
-      final studentDoc = await FirebaseFirestore.instance.collection('Student').doc(user.uid).get();
+      final studentDoc =
+          await FirebaseFirestore.instance
+              .collection('Student')
+              .doc(user.uid)
+              .get();
       if (studentDoc.exists) {
         setState(() {
           selectedRole = 'Student';
@@ -66,10 +76,10 @@ class _ProfilepageState extends State<Profilepage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
-        title: const Text(
-          "User Profile",
+        title: Text(
+          "My Account",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -83,6 +93,17 @@ class _ProfilepageState extends State<Profilepage> {
         ),
         child: Column(
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                profileSectionTitle(
+                  "User Settings",
+                  screenHeight / 3,
+                  screenWidth,
+                  screenWidth * 0.05,
+                ),
+              ],
+            ),
             buildMenuTile(
               icon: Icons.person,
               title: 'Profile Details',
@@ -104,14 +125,48 @@ class _ProfilepageState extends State<Profilepage> {
               textColor: Colors.black,
               onTap: () {
                 Navigator.push(
-                  context, 
+                  context,
                   MaterialPageRoute(
-                    builder: (context) => const Forgotpassword(fromProfile: true),
-                  )
+                    builder:
+                        (context) => const Forgotpassword(fromProfile: true),
+                  ),
                 );
               },
             ),
-            if (selectedRole != 'Staff')
+            if (selectedRole != 'Staff') ...[
+              buildMenuTile(
+              icon: Icons.settings,
+              title: 'Settings',
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => const Settingspage(),
+                  ),
+                );
+              },
+            ),
+              Padding(
+                padding: EdgeInsets.symmetric(),
+                child: Divider(
+                  color: Colors.black,
+                  thickness: screenWidth * 0.0025,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  profileSectionTitle(
+                    "Others",
+                    screenHeight / 5,
+                    screenWidth,
+                    screenWidth * 0.05,
+                  ),
+                ],
+              ),
               buildMenuTile(
                 icon: FontAwesomeIcons.suitcase,
                 title: 'Leave Request',
@@ -126,6 +181,15 @@ class _ProfilepageState extends State<Profilepage> {
                   );
                 },
               ),
+            ],
+
+            Padding(
+              padding: EdgeInsets.symmetric(),
+              child: Divider(
+                color: Colors.black,
+                thickness: screenWidth * 0.0025,
+              ),
+            ),
             buildMenuTile(
               icon: Icons.logout,
               title: 'Logout',
@@ -134,6 +198,13 @@ class _ProfilepageState extends State<Profilepage> {
               onTap: () {
                 logout(context);
               },
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(),
+              child: Divider(
+                color: Colors.black,
+                thickness: screenWidth * 0.0025,
+              ),
             ),
           ],
         ),

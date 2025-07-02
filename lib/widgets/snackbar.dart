@@ -5,12 +5,7 @@ class CustomSnackBar {
     return SnackBar(
       content: Text(message),
       backgroundColor: Colors.red,
-      duration: const Duration(seconds: 4),
-      action: SnackBarAction(
-        textColor: Colors.white,
-        label: 'Dismiss',
-        onPressed: () {},
-      ),
+      duration: const Duration(seconds: 3),
     );
   }
 

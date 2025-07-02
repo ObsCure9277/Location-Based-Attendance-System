@@ -15,10 +15,19 @@ class StaffDashboardpage extends StatefulWidget {
   State<StaffDashboardpage> createState() => _StaffDashboardpageState();
 }
 
+double screenHeight = 0;
+double screenWidth = 0;
+
 class _StaffDashboardpageState extends State<StaffDashboardpage> {
   int touchedIndex = -1;
   String _searchQuery = '';
   String? staffName;
+
+  final Map<String, Color> statusColorMap = {
+    'Present': Colors.green,
+    'Absent': Colors.red,
+    'Leave': Colors.orange,
+  };
 
   @override
   void initState() {
@@ -36,12 +45,6 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
       staffName = staffDoc['name'];
     });
   }
-
-  final Map<String, Color> statusColorMap = {
-    'Present': Colors.green,
-    'Absent': Colors.red,
-    'Leave': Colors.orange,
-  };
 
   Future<void> exportPieChartToPdf(
     BuildContext context,
@@ -64,9 +67,7 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text(
-                    "Preparing chart for PDF export...",
-                  ),
+                  Text("Preparing chart for PDF export..."),
                 ],
               ),
             ),
@@ -79,19 +80,23 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
         builder:
             (dialogContext) => Dialog(
               child: Container(
-                color: Colors.white,
                 padding: const EdgeInsets.all(16.0),
                 width: 400,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Attendance Rate by Status',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Attendance Rate by Status',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       subjectText,
@@ -168,11 +173,8 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                           onPressed: () => Navigator.pop(dialogContext),
                           child: const Text(
                             'Cancel',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                              ),
-                            )
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
                         ),
                         ElevatedButton(
                           onPressed: () async {
@@ -194,7 +196,7 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
-                                          )
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -285,7 +287,6 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                 ),
                               );
 
-                              // Close loading dialog
                               Navigator.of(context).pop();
 
                               // Save PDF using our helper
@@ -304,7 +305,6 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                 Navigator.of(context).pop();
                               } catch (_) {}
 
-                              print('Error generating PDF: $e');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
@@ -320,11 +320,8 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                           ),
                           child: const Text(
                             'Generate PDF',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          )
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                         ),
                       ],
                     ),
@@ -338,7 +335,6 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
         Navigator.of(context).pop();
       } catch (_) {}
 
-      print('Error in PDF export: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
@@ -401,46 +397,21 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
     }
   }
 
-  Widget buildSummaryColumn(String label, int count, Color color) {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: "NexaRegular",
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontFamily: "NexaBold",
-              fontSize: 22,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Dashboard',
+        title: Text(
+          'Attendance Dashboard',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
           ),
         ),
         actions: [
@@ -476,7 +447,10 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                       value: subject,
                       child: Text(
                         subject == 'All' ? 'All Subjects' : subject,
-                        style: const TextStyle(fontFamily: 'NexaBold'),
+                        style: TextStyle(
+                          fontFamily: 'NexaBold',
+                          fontSize: screenWidth * 0.035,
+                        ),
                       ),
                     );
                   }).toList();
@@ -494,10 +468,13 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
           }
           final filteredRates = snapshot.data!;
           if (filteredRates.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No Attendance Data Found.",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenWidth * 0.04,
+                ),
               ),
             );
           }
@@ -514,13 +491,12 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                               .snapshots(),
                   builder: (context, timetableSnapshot) {
                     if (!timetableSnapshot.hasData) {
-                      return const SizedBox(
-                        height: 100,
+                      return SizedBox(
+                        height: screenHeight * 0.125,
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
                     final timetableDocs = timetableSnapshot.data!.docs;
-                    // Filter timetable IDs by subject if a subject is selected
                     final timetableIds =
                         timetableDocs
                             .where(
@@ -538,23 +514,27 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
 
                     if (timetableIds.isEmpty) {
                       return Container(
-                        margin: const EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          top: 20,
+                        margin: EdgeInsets.only(
+                          left: screenWidth * 0.05,
+                          right: screenWidth * 0.05,
+                          top: screenHeight * 0.025,
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        height: 100,
-                        decoration: const BoxDecoration(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                        ),
+                        height: screenHeight * 0.125,
+                        decoration: BoxDecoration(
                           color: Colors.black,
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black26,
                               blurRadius: 10,
                               offset: Offset(2, 2),
                             ),
                           ],
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(screenWidth * 0.05),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -575,8 +555,8 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                               .snapshots(),
                       builder: (context, attendanceSnapshot) {
                         if (!attendanceSnapshot.hasData) {
-                          return const SizedBox(
-                            height: 100,
+                          return SizedBox(
+                            height: screenHeight * 0.125,
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
@@ -589,23 +569,27 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                           if (status == 'Absent') absent++;
                         }
                         return Container(
-                          margin: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            top: 20,
+                          margin: EdgeInsets.only(
+                            left: screenWidth * 0.05,
+                            right: screenWidth * 0.05,
+                            top: screenHeight * 0.025,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          height: 100,
-                          decoration: const BoxDecoration(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.04,
+                          ),
+                          height: screenHeight * 0.125,
+                          decoration: BoxDecoration(
                             color: Colors.black,
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: Colors.black26,
                                 blurRadius: 10,
                                 offset: Offset(2, 2),
                               ),
                             ],
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(screenWidth * 0.05),
+                            ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -625,39 +609,61 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                   },
                 ),
                 Container(
-                  margin: const EdgeInsets.only(
-                    left: 20.0,
-                    right: 20.0,
-                    top: 20.0,
+                  margin: EdgeInsets.only(
+                    left: screenWidth * 0.05,
+                    right: screenWidth * 0.05,
+                    top: screenHeight * 0.025,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.075),
                     color: Colors.black,
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 10,
-                        offset: const Offset(2, 2),
+                        offset: Offset(2, 2),
                       ),
                     ],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(screenWidth * 0.05),
                     child: Column(
                       children: [
-                        const Text(
-                          'Attendance Rate by Status',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(width: screenWidth * 0.025),
+                            Text(
+                              'Attendance Rate by Status',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.04,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: screenWidth * 0.11),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    exportPieChartToPdf(context, filteredRates);
+                                  },
+                                  child: Icon(
+                                    Icons.print,
+                                    color: Colors.white,
+                                    size: screenWidth * 0.06,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                         if (filteredRates.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(
-                              top: 8.0,
-                              bottom: 8.0,
+                            padding: EdgeInsets.only(
+                              top: screenHeight * 0.01,
+                              bottom: screenHeight * 0.01,
                             ),
                             child: Text(
                               _searchQuery.isEmpty
@@ -666,8 +672,8 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                       .map((e) => e['subject'])
                                       .toSet()
                                       .join(', '),
-                              style: const TextStyle(
-                                fontSize: 15,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.0375,
                                 color: Colors.white70,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -675,8 +681,8 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                             ),
                           ),
                         SizedBox(
-                          height: 200,
-                          width: 230,
+                          height: screenHeight * 0.30,
+                          width: screenWidth * 0.575,
                           child: Container(
                             color: Colors.black,
                             child: PieChart(
@@ -702,14 +708,20 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                   },
                                 ),
                                 borderData: FlBorderData(show: false),
-                                sectionsSpace: 2,
-                                centerSpaceRadius: 40,
+                                sectionsSpace: screenWidth * 0.005,
+                                centerSpaceRadius: screenWidth * 0.1,
                                 sections: List.generate(filteredRates.length, (
                                   i,
                                 ) {
                                   final isTouched = i == touchedIndex;
-                                  final fontSize = isTouched ? 20.0 : 14.0;
-                                  final radius = isTouched ? 65.0 : 55.0;
+                                  final fontSize =
+                                      isTouched
+                                          ? screenWidth * 0.05
+                                          : screenWidth * 0.035;
+                                  final radius =
+                                      isTouched
+                                          ? screenWidth * 0.16
+                                          : screenWidth * 0.135;
                                   final data = filteredRates[i];
                                   return PieChartSectionData(
                                     color:
@@ -730,20 +742,20 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.0125),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: List.generate(filteredRates.length, (i) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 2.0,
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.0025,
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Container(
-                                    width: 12,
-                                    height: 12,
+                                    width: screenWidth * 0.03,
+                                    height: screenWidth * 0.03,
                                     decoration: BoxDecoration(
                                       color:
                                           statusColorMap[filteredRates[i]['status']] ??
@@ -751,15 +763,15 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                                       shape: BoxShape.rectangle,
                                     ),
                                   ),
-                                  const SizedBox(width: 5),
+                                  SizedBox(width: screenWidth * 0.0125),
                                   Text(
                                     '${filteredRates[i]['status']}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.035,
                                       color: Colors.white,
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: screenWidth * 0.025),
                                 ],
                               ),
                             );
@@ -769,16 +781,7 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () => exportPieChartToPdf(context, filteredRates),
-                  icon: const Icon(Icons.print, color: Colors.white),
-                  label: const Text('Export Chart'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
+                SizedBox(height: screenHeight * 0.025),
               ],
             ),
           );
@@ -786,4 +789,32 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
       ),
     );
   }
+}
+
+Widget buildSummaryColumn(String label, int count, Color color) {
+  return Expanded(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: "NexaRegular",
+            fontSize: screenWidth * 0.04,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.01),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontFamily: "NexaBold",
+            fontSize: screenWidth * 0.055,
+            color: color,
+          ),
+        ),
+      ],
+    ),
+  );
 }

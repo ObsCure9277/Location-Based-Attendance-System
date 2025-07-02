@@ -17,6 +17,11 @@ class ProfileDetailspage extends StatefulWidget {
 }
 
 class _ProfileDetailspageState extends State<ProfileDetailspage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
+  bool isUploading = false;
+  bool isObscure = true;
+  bool isEditable = false;
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumberController = TextEditingController();
@@ -26,11 +31,7 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
   final String phoneNumberPattern = r'^\+?[0-9]{7,15}$';
   String? avatarUrl;
 
-  bool isUploading = false;
-  bool isObscure = true;
-  bool isEditable = false;
-  double screenHeight = 0;
-  double screenWidth = 0;
+  
 
   @override
   void initState() {
@@ -314,9 +315,7 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
           isUploading = false;
         });
       }
-    } catch (e, stack) {
-      print('Error uploading avatar: $e');
-      print(stack);
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to upload avatar: $e')));

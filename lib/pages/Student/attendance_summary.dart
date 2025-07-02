@@ -13,6 +13,8 @@ class AttendanceSummarypage extends StatefulWidget {
 }
 
 class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
+  double screenHeight = 0;
+  double screenWidth = 0;
   String? userId;
   String? groupName;
 
@@ -63,6 +65,9 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
     if (userId == null || groupName == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -70,10 +75,10 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.black,
-        title: const Text(
+        title: Text(
           "Attendance Summary",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -92,10 +97,13 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
           }
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No subjects assigned.",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: screenWidth * 0.04, // Responsive font size
+                ),
               ),
             );
           }
@@ -109,7 +117,7 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(screenWidth * 0.04), // Responsive padding
             children:
                 grouped.entries.map((entry) {
                   final subjectName = entry.key;
@@ -138,7 +146,7 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
                         final attended = total - absent;
                         percent = total == 0 ? 0.0 : attended / total;
                         progressColor =
-                            percent >= 0.75
+                            percent >= 0.80
                                 ? Colors.green
                                 : (percent >= 0.5 ? Colors.orange : Colors.red);
                       }
@@ -157,11 +165,17 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
                           );
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
+                          margin: EdgeInsets.only(
+                            bottom: screenHeight * 0.02,
+                          ), // Responsive margin
+                          padding: EdgeInsets.all(
+                            screenWidth * 0.04,
+                          ), // Responsive padding
                           decoration: BoxDecoration(
                             color: Colors.black,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              screenWidth * 0.03,
+                            ), // Responsive border radius
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,22 +183,30 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
                               Expanded(
                                 child: Text(
                                   subjectName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize:
+                                        screenWidth *
+                                        0.04, // Responsive font size
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                               CircularPercentIndicator(
-                                radius: 30.0,
-                                lineWidth: 6.0,
+                                radius:
+                                    screenWidth * 0.075, // Responsive radius
+                                lineWidth:
+                                    screenWidth *
+                                    0.015, // Responsive line width
                                 percent: percent.clamp(0.0, 1.0),
                                 center: Text(
                                   "${(percent * 100).toInt()}%",
                                   style: TextStyle(
                                     color: progressColor,
                                     fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        screenWidth *
+                                        0.035, // Responsive font size
                                   ),
                                 ),
                                 progressColor: progressColor,
