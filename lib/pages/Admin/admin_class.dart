@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
+import 'package:location_based_attendance_app/widgets/dialog.dart';
 
 class Adminclasspage extends StatefulWidget {
   const Adminclasspage({super.key});
@@ -242,13 +243,58 @@ class _AdminclasspageState extends State<Adminclasspage> {
                               size: screenWidth * 0.06,
                             ),
                             onPressed: () async {
-                              await deleteClassData(data);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                CustomSnackBar().successSnackBar(
-                                  message:
-                                      'Tutorial Group deleted successfully!',
+                              bool
+                              confirmDelete = await ConfirmDialog.showDeleteConfirmation(
+                                context: context,
+                                title: 'Confirm Deletion',
+                                message: '',
+                                customContent: RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.04,
+                                      color: Colors.black87,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text:
+                                            'Are you sure you want to delete Tutorial Group ',
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            '"${data['GroupName'] ?? 'Unknown'}"',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NexaBold',
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            ' ? This action cannot be undone.',
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
+
+                              if (confirmDelete) {
+                                try {
+                                  await deleteClassData(data);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    CustomSnackBar().successSnackBar(
+                                      message:
+                                          'Tutorial Group deleted successfully!',
+                                    ),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    CustomSnackBar().errorSnackBar(
+                                      message:
+                                          'Error deleting tutorial group: ${e.toString()}',
+                                    ),
+                                  );
+                                }
+                              }
                             },
                           ),
                         ],

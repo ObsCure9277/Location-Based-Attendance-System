@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
+import 'package:location_based_attendance_app/widgets/dialog.dart';
 
 class Admintimetablepage extends StatefulWidget {
   const Admintimetablepage({super.key});
@@ -45,7 +46,6 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
       await attendanceDoc.reference.delete();
     }
 
-    // Delete the timetable itself
     await firestore.collection('Timetable').doc(doc.id).delete();
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -114,8 +114,8 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
             width: double.infinity,
             color: Colors.black87,
             padding: EdgeInsets.symmetric(
-              vertical: screenHeight * 0.02, 
-              horizontal: screenWidth * 0.04, 
+              vertical: screenHeight * 0.02,
+              horizontal: screenWidth * 0.04,
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -161,12 +161,10 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                     child: Text(
                       "No Record Found !",
                       style: TextStyle(
-                        fontSize: screenWidth * 0.045, 
+                        fontSize: screenWidth * 0.045,
                         fontFamily: "NexaBold",
                         color: Colors.black,
-                        letterSpacing:
-                            screenWidth *
-                            0.0018, 
+                        letterSpacing: screenWidth * 0.0018,
                       ),
                     ),
                   );
@@ -177,7 +175,7 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                   itemBuilder: (context, index) {
                     var data = filteredDocs[index];
                     return Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.02), 
+                      padding: EdgeInsets.all(screenWidth * 0.02),
                       child: GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -209,7 +207,7 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                 ),
                               ],
                             ),
-                            SizedBox(width: screenWidth * 0.025), 
+                            SizedBox(width: screenWidth * 0.025),
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
@@ -219,19 +217,17 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                           : Colors.white,
                                   borderRadius: BorderRadius.circular(
                                     screenWidth * 0.03,
-                                  ), 
+                                  ),
                                   border: Border.all(
                                     color:
                                         data['Type'] == 'L'
                                             ? Colors.white
                                             : Colors.black,
-                                    width: screenWidth * 0.0025, 
+                                    width: screenWidth * 0.0025,
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(
-                                    screenWidth * 0.03,
-                                  ), 
+                                  padding: EdgeInsets.all(screenWidth * 0.03),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -258,22 +254,16 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                               ),
                                             ],
                                           ),
-                                          SizedBox(
-                                            width: screenWidth * 0.01,
-                                          ), 
+                                          SizedBox(width: screenWidth * 0.01),
                                           Icon(
                                             Icons.home,
                                             color:
                                                 data['Type'] == 'L'
                                                     ? Colors.white
                                                     : Colors.black,
-                                            size:
-                                                screenWidth *
-                                                0.05, 
+                                            size: screenWidth * 0.05,
                                           ),
-                                          SizedBox(
-                                            width: screenWidth * 0.01,
-                                          ),
+                                          SizedBox(width: screenWidth * 0.01),
                                           Text(
                                             data['locationName'],
                                             style: TextStyle(
@@ -289,21 +279,68 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                             icon: Icon(
                                               Icons.delete,
                                               color: Colors.red,
+                                              size: screenWidth * 0.05,
                                             ),
-                                            onPressed: () {
-                                              deleteTimetable(data);
+                                            onPressed: () async {
+                                              bool
+                                              confirmDelete = await ConfirmDialog.showDeleteConfirmation(
+                                                context: context,
+                                                title: 'Confirm Deletion',
+                                                message: '',
+                                                customContent: RichText(
+                                                  text: TextSpan(
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          screenWidth * 0.04,
+                                                      color: Colors.black87,
+                                                    ),
+                                                    children: [
+                                                      TextSpan(
+                                                        text:
+                                                            'Are you sure you want to delete this timetable for ',
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            '"${data['Subject'] ?? 'Unknown'}"',
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontFamily:
+                                                              'NexaBold',
+                                                        ),
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            ' ? This action cannot be undone.',
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+
+                                              if (confirmDelete) {
+                                                try {
+                                                  deleteTimetable(data);
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    CustomSnackBar().errorSnackBar(
+                                                      message:
+                                                          'Error deleting timetable: ${e.toString()}',
+                                                    ),
+                                                  );
+                                                }
+                                              }
                                             },
                                           ),
                                         ],
                                       ),
-                                      SizedBox(
-                                        height: screenHeight * 0.01,
-                                      ), 
+                                      SizedBox(height: screenHeight * 0.01),
                                       Text(
                                         data['Subject'],
                                         style: TextStyle(
-                                          fontSize:
-                                              screenWidth * 0.04, 
+                                          fontSize: screenWidth * 0.04,
                                           fontWeight: FontWeight.bold,
                                           color:
                                               data['Type'] == 'L'
@@ -311,22 +348,18 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                                   : Colors.black,
                                         ),
                                       ),
-                                      SizedBox(
-                                        height: screenHeight * 0.008,
-                                      ), 
+                                      SizedBox(height: screenHeight * 0.008),
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.person,
-                                            size: screenWidth * 0.04, 
+                                            size: screenWidth * 0.04,
                                             color:
                                                 data['Type'] == 'L'
                                                     ? Colors.white
                                                     : Colors.black,
                                           ),
-                                          SizedBox(
-                                            width: screenWidth * 0.01,
-                                          ), 
+                                          SizedBox(width: screenWidth * 0.01),
                                           Text(
                                             data['Lecturer'],
                                             style: TextStyle(
@@ -334,9 +367,7 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                                                   data['Type'] == 'L'
                                                       ? Colors.white
                                                       : Colors.black,
-                                              fontSize:
-                                                  screenWidth *
-                                                  0.035, 
+                                              fontSize: screenWidth * 0.035,
                                             ),
                                           ),
                                         ],

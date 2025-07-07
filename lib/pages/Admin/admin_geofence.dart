@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location_based_attendance_app/pages/Global/splash.dart';
 import 'package:location_based_attendance_app/widgets/form.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
+import 'package:location_based_attendance_app/widgets/dialog.dart';
 
 class Admingeofencepage extends StatefulWidget {
   const Admingeofencepage({super.key});
@@ -54,7 +55,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
         title: Text(
           "Location",
           style: TextStyle(
-            fontSize: screenWidth * 0.05, 
+            fontSize: screenWidth * 0.05,
             fontFamily: "NexaBold",
             color: Colors.white,
           ),
@@ -87,7 +88,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                       'Sort by Name',
                       style: TextStyle(
                         fontFamily: 'NexaBold',
-                        fontSize: screenWidth * 0.035, // Added responsive size
+                        fontSize: screenWidth * 0.035,
                       ),
                     ),
                   ),
@@ -97,7 +98,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                       'Sort by Radius',
                       style: TextStyle(
                         fontFamily: 'NexaBold',
-                        fontSize: screenWidth * 0.035, // Added responsive size
+                        fontSize: screenWidth * 0.035,
                       ),
                     ),
                   ),
@@ -108,7 +109,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                       'Ascending',
                       style: TextStyle(
                         fontFamily: 'NexaBold',
-                        fontSize: screenWidth * 0.035, // Added responsive size
+                        fontSize: screenWidth * 0.035,
                       ),
                     ),
                   ),
@@ -118,17 +119,14 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                       'Descending',
                       style: TextStyle(
                         fontFamily: 'NexaBold',
-                        fontSize: screenWidth * 0.035, // Added responsive size
+                        fontSize: screenWidth * 0.035,
                       ),
                     ),
                   ),
                 ],
           ),
           IconButton(
-            icon: Icon(
-              Icons.add,
-              size: screenWidth * 0.06, // Added responsive size
-            ),
+            icon: Icon(Icons.add, size: screenWidth * 0.06),
             color: Colors.white,
             tooltip: 'Add Location',
             onPressed: () {
@@ -179,11 +177,10 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
               child: Text(
                 "No Location Found !",
                 style: TextStyle(
-                  fontSize: screenWidth * 0.045, 
+                  fontSize: screenWidth * 0.045,
                   fontFamily: "NexaBold",
                   color: Colors.black,
-                  letterSpacing:
-                      screenWidth * 0.0018, 
+                  letterSpacing: screenWidth * 0.0018,
                 ),
               ),
             );
@@ -194,7 +191,7 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
             itemBuilder: (context, index) {
               var data = docs[index];
               return Padding(
-                padding: EdgeInsets.all(screenWidth * 0.02), 
+                padding: EdgeInsets.all(screenWidth * 0.02),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -207,16 +204,14 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black,
-                      borderRadius: BorderRadius.circular(
-                        screenWidth * 0.03,
-                      ), 
+                      borderRadius: BorderRadius.circular(screenWidth * 0.03),
                       border: Border.all(
                         color: Colors.white,
-                        width: screenWidth * 0.0025, 
+                        width: screenWidth * 0.0025,
                       ),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.04), 
+                      padding: EdgeInsets.all(screenWidth * 0.04),
                       child: Row(
                         children: [
                           Expanded(
@@ -226,18 +221,18 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                                 Text(
                                   data['locationName'] ?? '',
                                   style: TextStyle(
-                                    fontSize: screenWidth * 0.045, 
+                                    fontSize: screenWidth * 0.045,
                                     fontFamily: "NexaBold",
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: screenWidth * 0.005, 
+                                    letterSpacing: screenWidth * 0.005,
                                   ),
                                 ),
-                                SizedBox(height: screenHeight * 0.005), 
+                                SizedBox(height: screenHeight * 0.005),
                                 Text(
                                   "Radius: ${((data['radius'] ?? 0) is num ? (data['radius'] ?? 0).round() : int.tryParse(data['radius'].toString()) ?? 0)} m",
                                   style: TextStyle(
-                                    fontSize: screenWidth * 0.04, 
+                                    fontSize: screenWidth * 0.04,
                                     fontFamily: "NexaRegular",
                                     color: Colors.white,
                                   ),
@@ -249,18 +244,62 @@ class _AdmingeofencepageState extends State<Admingeofencepage> {
                             icon: Icon(
                               Icons.delete,
                               color: Colors.red,
-                              size: screenWidth * 0.06, // Added responsive size
+                              size: screenWidth * 0.06,
                             ),
                             onPressed: () async {
-                              await FirebaseFirestore.instance
-                                  .collection('Location')
-                                  .doc(data.id)
-                                  .delete();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                CustomSnackBar().successSnackBar(
-                                  message: 'Location deleted successfully!',
+                              bool
+                              confirmDelete = await ConfirmDialog.showDeleteConfirmation(
+                                context: context,
+                                title: 'Confirm Deletion',
+                                message:
+                                    '',
+                                customContent: RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.04,
+                                      color: Colors.black87,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text:
+                                            'Are you sure you want to delete Location ',
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            '"${data['locationName'] ?? 'Unknown'}"',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NexaBold',
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' ? This action cannot be undone.',
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
+                              if (confirmDelete) {
+                                try {
+                                  await FirebaseFirestore.instance
+                                      .collection('Location')
+                                      .doc(data.id)
+                                      .delete();
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    CustomSnackBar().successSnackBar(
+                                      message: 'Location deleted successfully!',
+                                    ),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    CustomSnackBar().errorSnackBar(
+                                      message:
+                                          'Error deleting location: ${e.toString()}',
+                                    ),
+                                  );
+                                }
+                              }
                             },
                           ),
                         ],
