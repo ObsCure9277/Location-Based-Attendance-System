@@ -1,8 +1,18 @@
 
 # 📍Location-Based Attendance System
 
-A Flutter-based mobile application that allows users to automate attendance marking using geofencing technology.
-This app is ideal for educational institutions aiming to streamline attendance tracking via mobile devices.
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/a8ed1404-be55-4265-9c46-d00830f122a9" alt="geomark-showcase" />
+    </td>
+    <td>
+        GeoMark, A Flutter-based mobile application that allows users to automate attendance marking using geofencing technology.
+        This app is ideal for educational institutions aiming to streamline attendance tracking via mobile devices.
+    </td>
+  </tr>
+</table>
+
 
 ## 🔑 Key Features
 
@@ -43,4 +53,5 @@ flutter pub get
 ```bash
 flutter run
 ```
+
 
