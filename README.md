@@ -1,17 +1,46 @@
-# BMCS3413-Project II
 
-SOLO Final Year Project
+# 📍Location-Based Attendance System
 
-### Project Name 
+A Flutter-based mobile application that allows users to automate attendance marking using geofencing technology.
+This app is ideal for educational institutions aiming to streamline attendance tracking via mobile devices.
 
-Location Based Attendance Mobile Application - GeoMark
+## 🔑 Key Features
 
-### Group Member
+### ✅ Geofence-Based Attendance Marking
+  - Ensures users are within a specific location radius before allowing attendance actions.
 
-Ng Shen Zhi
+### ✅ Real-Time Location Detection
+  - Uses device GPS to verify user proximity to predefined coordinates.
 
-### Project Timeline
+### ✅ Attendance Records
+  - Saves attedance record with timestamp.
 
-- Project Commencement: 13 June 2025
-- Project Completion: -
+### ✅ Location Status Alerts
+  - Notifies users about attendance status (e.g., outside the predefined area, inside the predefined area).
+
+## 💻 Tech Stack
+
+- <b>Frontend:</b> Dart
+- <b>Backend:</b> Firebase, Cloudinary
+  
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK
+- Firebase Project (Cloud Firestore)
+- Cloudinary Project
+
+### Installation
+```bash
+git clone https://github.com/ObsCure9277/Location-Based-Attendance-System.git
+cd Location-Based-Attendance-System
+flutter pub get
+````
+
+### Run the App
+
+> 🔑 Make sure to set up `google-services.json` or `GoogleService-Info.plist` in the correct directories before run.
+```bash
+flutter run
+```
 
