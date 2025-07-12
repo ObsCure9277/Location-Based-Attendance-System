@@ -12,6 +12,7 @@ import 'package:location_based_attendance_app/pages/Global/verify_email.dart';
 import 'package:location_based_attendance_app/widgets/field.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -29,13 +30,17 @@ class _LoginState extends State<Login> {
   final String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
 
-  final String adminEmail = 'admin@gmail.com';
-  final String adminPassword = '123456';
+  String getAdminEmail() {
+    return dotenv.env['ADMIN_EMAIL'] ?? 'admin@gmail.com';
+  }
+
+  String getAdminPassword() {
+    return dotenv.env['ADMIN_PASSWORD'] ?? '123456';
+  }
 
   Future<void> signin() async {
-    // Check for hardcoded admin login
-    if (emailController.text.trim() == adminEmail &&
-        passwordController.text == adminPassword) {
+    if (emailController.text.trim() == getAdminEmail() &&
+        passwordController.text == getAdminPassword()) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         CustomSnackBar().successSnackBar(message: 'Admin Login successfully'),

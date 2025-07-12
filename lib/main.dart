@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:get/get.dart';
@@ -9,19 +10,22 @@ import 'package:location_based_attendance_app/service/background_service.dart';
 
 void main() async{ 
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   await initBackgroundService();
   await FlutterDownloader.initialize(debug: true);
 
   if(kIsWeb){
     await Firebase.initializeApp(
       options: FirebaseOptions(
-        apiKey: "AIzaSyA91zxDnmMKowohrLXO1LnLMO9vlsc2wqk",
-        authDomain: "geofencing-attendance-ap-910c8.firebaseapp.com",
-        projectId: "geofencing-attendance-ap-910c8",
-        storageBucket: "geofencing-attendance-ap-910c8.firebasestorage.app",
-        messagingSenderId: "340718914134",
-        appId: "1:340718914134:web:4bb0c54185d0e692e489f7"));
-  }else{
+        apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+        authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
+        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
+        storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
+        messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+        appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
+      )
+    );
+  } else {
     await Firebase.initializeApp();
   }
   

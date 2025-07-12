@@ -8,6 +8,7 @@ import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/field.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProfileDetailspage extends StatefulWidget {
   const ProfileDetailspage({super.key});
@@ -30,8 +31,6 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
   String selectedRole = '';
   final String phoneNumberPattern = r'^\+?[0-9]{7,15}$';
   String? avatarUrl;
-
-  
 
   @override
   void initState() {
@@ -225,6 +224,20 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
   }
 
   Future<void> pickUploadProfilePic() async {
+    // At the beginning of the pickUploadProfilePic method
+    final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
+    final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
+
+    if (cloudName == null || uploadPreset == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Missing Cloudinary configuration. Please contact support.',
+          ),
+        ),
+      );
+      return;
+    }
     final picker = ImagePicker();
 
     // Let user choose source
@@ -269,6 +282,11 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
         isUploading = true;
       });
 
+      // Get Cloudinary credentials from env
+      final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? 'dbvtq5i7g';
+      final uploadPreset =
+          dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? 'ml_default';
+
       // Upload to Cloudinary
       final imageFile = File(pickedImage.path);
       final uploadParams = FormData.fromMap({
@@ -276,11 +294,11 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
           imageFile.path,
           filename: imageFile.path.split("/").last,
         ),
-        'upload_preset': 'ml_default', // Your unsigned preset
+        'upload_preset': uploadPreset,
       });
 
       final response = await Dio().post(
-        'https://api.cloudinary.com/v1_1/dbvtq5i7g/upload', // Your cloud name
+        'https://api.cloudinary.com/v1_1/$cloudName/upload',
         data: uploadParams,
         options: Options(headers: {'X-Requested-With': 'XMLHttpRequest'}),
       );
