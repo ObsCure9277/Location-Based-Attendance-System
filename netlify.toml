@@ -1,5 +1,6 @@
 [build]
-  publish = "build/web"
+  publish = "/opt/build/repo/build/web"
+  publishOrigin: config
 
 [[redirects]]
   from = "/*"
