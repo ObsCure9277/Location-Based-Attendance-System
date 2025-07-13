@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A location-based attendance app.">
+  <title>Location Based Attendance</title>
+  
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+    
+    #phone-frame {
+      position: relative;
+      width: 390px; /* iPhone 12/13 width */
+      height: 844px; /* iPhone 12/13 height */
+      background-color: white;
+      border-radius: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      border: 12px solid #1a1a1a;
+      box-sizing: content-box;
+      overflow: hidden;
+      transform-origin: center;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    #flutter-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+    }
+    
+    /* Make sure content scales properly */
+    @media (max-height: 900px) {
+      #phone-frame {
+        transform: scale(0.9);
+      }
+    }
+    
+    @media (max-height: 800px) {
+      #phone-frame {
+        transform: scale(0.8);
+      }
+    }
+  </style>
+  
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <div id="phone-frame">
+    <div class="notch"></div>
+    <div id="flutter-content"></div>
+  </div>
+  
+  <script>
+    window.addEventListener('load', function() {
+      // Make sure Flutter knows the exact dimensions to use
+      window.flutterDimensions = {width: 390, height: 844};
+      
+      _flutter.loader.loadEntrypoint({
+        elementOrContainerId: 'flutter-content',
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine({
+            // Explicitly set the canvas size
+            hostElement: document.querySelector('#flutter-content'),
+            canvasKitBaseUrl: "/canvaskit/",
+          }).then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
