@@ -1,99 +1,150 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
+  <base href="/">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A location-based attendance app.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Location Based Attendance</title>
   
+  <!-- Flutter resources -->
+  <link rel="manifest" href="manifest.json">
+  <script src="flutter.js" defer></script>
+  
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
       background-color: #f0f0f0;
+    }
+    
+    #app-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
     #phone-frame {
       position: relative;
-      width: 390px; /* iPhone 12/13 width */
-      height: 844px; /* iPhone 12/13 height */
+      width: 390px;
+      height: 844px;
       background-color: white;
       border-radius: 40px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      border: 12px solid #1a1a1a;
-      box-sizing: content-box;
       overflow: hidden;
-      transform-origin: center;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 12px solid #1a1a1a;
     }
     
-    #flutter-content {
+    #flutter-app {
       position: absolute;
       top: 0;
       left: 0;
-      width: 390px;
-      height: 844px;
-      overflow: hidden;
+      right: 0;
+      bottom: 0;
     }
     
-    /* Make sure content scales properly */
-    @media (max-height: 900px) {
-      #phone-frame {
-        transform: scale(0.9);
-      }
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background-color: #1a1a1a;
+      border-bottom-left-radius: 15px;
+      border-bottom-right-radius: 15px;
+      z-index: 1000;
+      pointer-events: none;
     }
     
-    @media (max-height: 800px) {
-      #phone-frame {
-        transform: scale(0.8);
-      }
+    #loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #3498db;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
-  
-  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <div id="phone-frame">
-    <div class="notch"></div>
-    <div id="flutter-content"></div>
+  <div id="app-container">
+    <div id="phone-frame">
+      <div class="notch"></div>
+      <div id="flutter-app"></div>
+      <div id="loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
   </div>
-  
+
   <script>
+    // Track loading state
+    let appInitialized = false;
+    
+    // Remove loading indicator when Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.opacity = '0';
+        setTimeout(() => loading.remove(), 500);
+      }
+      appInitialized = true;
+    });
+    
+    // Fallback to remove loading after timeout
+    setTimeout(function() {
+      if (!appInitialized) {
+        console.warn('Flutter app did not initialize in expected time');
+        const loading = document.getElementById('loading');
+        if (loading) loading.remove();
+      }
+    }, 10000);
+    
+    // Initialize Flutter
     window.addEventListener('load', function() {
-      // Make sure Flutter knows the exact dimensions to use
-      window.flutterDimensions = {width: 390, height: 844};
+      const loadingIndicator = document.querySelector('#loading');
       
       _flutter.loader.loadEntrypoint({
-        elementOrContainerId: 'flutter-content',
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine({
-            // Explicitly set the canvas size
-            hostElement: document.querySelector('#flutter-content'),
-            canvasKitBaseUrl: "/canvaskit/",
+            hostElement: document.querySelector('#flutter-app'),
+            renderer: 'html'
           }).then(function(appRunner) {
+            console.log('Flutter engine initialized');
             appRunner.runApp();
+          }).catch(function(error) {
+            console.error('Failed to initialize Flutter engine:', error);
+            if (loadingIndicator) {
+              loadingIndicator.textContent = 'Error loading app: ' + error;
+            }
           });
         }
       });
