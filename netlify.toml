@@ -1,5 +1,3 @@
-[build]
-  publish = "/opt/build/repo/build/web"
 
 [[redirects]]
   from = "/*"
