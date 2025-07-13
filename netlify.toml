@@ -1,6 +1,5 @@
 [build]
   publish = "build/web"
-  command = "flutter build web --release --web-renderer html"
 
 [[redirects]]
   from = "/*"
