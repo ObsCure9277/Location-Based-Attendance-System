@@ -17,22 +17,145 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="A location-based attendance app.">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="location_based_attendance_app">
+  <meta name="apple-mobile-web-app-title" content="attendance_app">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>location_based_attendance_app</title>
+  <title>Location Based Attendance</title>
   <link rel="manifest" href="manifest.json">
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #333333;
+    }
+
+    #phone-container {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      background: white;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 10px solid #121212;
+      box-sizing: content-box;
+      transform-origin: center;
+    }
+    
+    #app-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0,0,0,0.1);
+      border-left-color: #7983ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {transform: rotate(360deg);}
+    }
+    
+    /* This is critical for fullscreen mode */
+    :fullscreen #phone-container,
+    :-webkit-full-screen #phone-container,
+    :-moz-full-screen #phone-container,
+    :-ms-fullscreen #phone-container {
+      width: 390px !important;
+      height: 844px !important;
+    }
+  </style>
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    const serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <div id="phone-container">
+    <div id="app-container"></div>
+    <div id="loading">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <script>
+    // Force phone view in fullscreen
+    function maintainPhoneView() {
+      const container = document.getElementById('phone-container');
+      if (container) {
+        container.style.width = '390px';
+        container.style.height = '844px';
+      }
+    }
+    
+    // Apply on all fullscreen events
+    document.addEventListener('fullscreenchange', maintainPhoneView);
+    document.addEventListener('webkitfullscreenchange', maintainPhoneView);
+    document.addEventListener('mozfullscreenchange', maintainPhoneView);
+    document.addEventListener('MSFullscreenChange', maintainPhoneView);
+    
+    // Also maintain on resize
+    window.addEventListener('resize', maintainPhoneView);
+
+    window.addEventListener('load', function(ev) {
+      // Hide loading indicator when Flutter app is ready
+      const loading = document.querySelector('#loading');
+      
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine({
+            hostElement: document.querySelector('#app-container')
+          }).then(function(appRunner) {
+            appRunner.runApp();
+            if (loading) {
+              loading.remove();
+            }
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

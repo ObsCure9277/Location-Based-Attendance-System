@@ -149,7 +149,7 @@ class _LoginState extends State<Login> {
           isKeyboardVisible
               ? SizedBox(height: screenHeight / 16)
               : Container(
-                height: screenHeight / 2.8,
+                height: screenHeight / 3,
                 width: screenWidth,
                 decoration: BoxDecoration(
                   color: Colors.black,
@@ -232,6 +232,7 @@ class _LoginState extends State<Login> {
                   },
                   child: buttonInText("LOGIN", screenHeight, screenWidth),
                 ),
+                SizedBox(height: screenHeight * 0.025),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -262,6 +263,7 @@ class _LoginState extends State<Login> {
                     ),
                   ],
                 ),
+                SizedBox(height: screenHeight * 0.0125),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

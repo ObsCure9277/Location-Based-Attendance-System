@@ -118,6 +118,7 @@ class _ProfilepageState extends State<Profilepage> {
                 );
               },
             ),
+            SizedBox(height: screenHeight * 0.01),
             buildMenuTile(
               icon: Icons.lock_reset,
               title: 'Reset Password',
@@ -134,6 +135,7 @@ class _ProfilepageState extends State<Profilepage> {
               },
             ),
             if (selectedRole != 'Staff') ...[
+              SizedBox(height: screenHeight * 0.01),
               buildMenuTile(
               icon: Icons.settings,
               title: 'Settings',

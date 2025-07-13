@@ -85,6 +85,7 @@ class _ProfilepageState extends State<AdminProfilepage> {
                 );
               },
             ),
+            SizedBox(height: screenHeight * 0.01),
             buildMenuTile(
               icon: FontAwesomeIcons.userGroup,
               title: 'Tutorial Group',
@@ -99,6 +100,7 @@ class _ProfilepageState extends State<AdminProfilepage> {
                 );
               },
             ),
+            SizedBox(height: screenHeight * 0.01),
             buildMenuTile(
               icon: FontAwesomeIcons.locationDot,
               title: 'Location',

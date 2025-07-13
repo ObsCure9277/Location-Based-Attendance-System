@@ -238,6 +238,7 @@ class _SignupState extends State<Signup> {
                       },
                       child: buttonInText('SIGN UP', screenHeight, screenWidth),
                     ),
+                    SizedBox(height: screenHeight * 0.025),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
