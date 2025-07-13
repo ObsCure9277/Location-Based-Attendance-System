@@ -30,7 +30,6 @@ void main() async {
     );
   } else {
     await Firebase.initializeApp();
-    print('Firebase initialized for non-web platform');
   }
 
   runApp(const MyApp());
