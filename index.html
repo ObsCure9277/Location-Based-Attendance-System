@@ -134,28 +134,6 @@
     
     // Also maintain on resize
     window.addEventListener('resize', maintainPhoneView);
-
-    window.addEventListener('load', function(ev) {
-      // Hide loading indicator when Flutter app is ready
-      const loading = document.querySelector('#loading');
-      
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine({
-            hostElement: document.querySelector('#app-container')
-          }).then(function(appRunner) {
-            appRunner.runApp();
-            if (loading) {
-              loading.remove();
-            }
-          });
-        }
-      });
-    });
   </script>
 </body>
 </html>
