@@ -1,6 +1,6 @@
 [build]
   publish = "build/web"
-  command = "./build.sh"
+  command = "chmod +x build.sh && ./build.sh"
 
 [[redirects]]
   from = "/*"
