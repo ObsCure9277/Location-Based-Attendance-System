@@ -176,7 +176,7 @@ class _StudenttimetablepageState extends State<Studenttimetablepage> {
                 if (filteredDocs.isEmpty) {
                   return Center(
                     child: Text(
-                      "No Record Found !",
+                      "No Class Found !",
                       style: TextStyle(
                         fontSize: screenWidth * 0.045,
                         fontFamily: "NexaBold",

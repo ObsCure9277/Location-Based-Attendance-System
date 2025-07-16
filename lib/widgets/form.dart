@@ -770,9 +770,6 @@ class _ClassFormState extends State<ClassForm> {
               .collection('Class')
               .where('GroupName', isEqualTo: groupName)
               .get();
-
-      // If adding, any match is a duplicate
-      // If editing, ignore the current doc
       final isDuplicate =
           widget.docToEdit == null
               ? query.docs.isNotEmpty

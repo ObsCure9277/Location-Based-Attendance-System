@@ -560,7 +560,7 @@ class _AttendanceDetailspageState extends State<AttendanceDetailspage> {
                         final timetableIds = timetableIdsSnapshot.data!;
                         if (timetableIds.isEmpty) {
                           return const Center(
-                            child: Text("No attendance records found."),
+                            child: Text("No Attendance Records Found!"),
                           );
                         }
                         return StreamBuilder<QuerySnapshot>(

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:location_based_attendance_app/pages/Global/login.dart';
+import 'package:location_based_attendance_app/service/auth_service.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
 
 class Verifyemail extends StatefulWidget {
@@ -15,76 +16,106 @@ class Verifyemail extends StatefulWidget {
 class _VerifyemailState extends State<Verifyemail> {
   bool isEmailVerified = false;
   Timer? timer;
+  bool canResendEmail = true;
+  int remainingSeconds = 0;
+  Timer? cooldownTimer;
 
   @override
   void initState() {
     super.initState();
-    isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
+    isEmailVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+
     if (!isEmailVerified) {
-      sendVerificationEmail();
-      timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      // Check email verification status less frequently (every 10 seconds)
+      timer = Timer.periodic(const Duration(seconds: 10), (timer) {
         checkEmailVerified();
       });
+
+      // Check initial cooldown status
+      updateCooldownStatus();
     }
   }
 
-  Future<void> checkEmailVerified() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      timer?.cancel();
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const KeyboardVisibilityProvider(child: Login()),
-        ),
-      );
-    }
-    try {
-      await user?.reload();
-    } catch (e) {
-      debugPrint("Error during user,reload(): $e");
-      timer?.cancel();
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const KeyboardVisibilityProvider(child: Login()),
-        ),
-      );
-      return;
-    }
-
-    final refreshedUser = FirebaseAuth.instance.currentUser;
-    if (!mounted) return;
+  Future<void> updateCooldownStatus() async {
+    final seconds = await authService.value.getRemainingCooldownSeconds();
 
     setState(() {
-      isEmailVerified = refreshedUser?.emailVerified ?? false;
+      remainingSeconds = seconds;
+      canResendEmail = seconds == 0;
     });
 
-    if (isEmailVerified) {
-      timer?.cancel();
+    if (seconds > 0 && cooldownTimer == null) {
+      startCooldownTimer();
+    }
+  }
+
+  void startCooldownTimer() {
+    cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+        } else {
+          canResendEmail = true;
+          cooldownTimer?.cancel();
+          cooldownTimer = null;
+        }
+      });
+    });
+  }
+
+  Future<void> checkEmailVerified() async {
+    // Reload user to get fresh verification status
+    try {
+      await FirebaseAuth.instance.currentUser?.reload();
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (mounted) {
+        setState(() {
+          isEmailVerified = user?.emailVerified ?? false;
+        });
+      }
+
+      if (isEmailVerified) {
+        timer?.cancel();
+      }
+    } catch (e) {
+      debugPrint("Error checking email verification: $e");
     }
   }
 
   Future<void> sendVerificationEmail() async {
-    final user = FirebaseAuth.instance.currentUser!;
+    final success =
+        await authService.value.sendVerificationEmailWithRateLimit();
 
-    try {
-      await user.sendEmailVerification();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        CustomSnackBar().errorSnackBar(
-          message: "Failed to send verification email: $e",
+        CustomSnackBar().successSnackBar(
+          message: "Verification email sent. Please check your inbox.",
         ),
       );
+      updateCooldownStatus();
+    } else {
+      if (remainingSeconds > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackBar().errorSnackBar(
+            message:
+                "Please wait ${remainingSeconds}s before requesting again.",
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          CustomSnackBar().errorSnackBar(
+            message: "Couldn't send verification email. Try again later.",
+          ),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
     timer?.cancel();
+    cooldownTimer?.cancel();
     super.dispose();
   }
 
@@ -94,14 +125,17 @@ class _VerifyemailState extends State<Verifyemail> {
           ? const KeyboardVisibilityProvider(child: Login())
           : Scaffold(
             appBar: AppBar(
+              backgroundColor: Colors.black,
               title: Text(
                 'Email Verification',
                 style: TextStyle(
                   fontFamily: "NexaBold",
                   fontSize: 20,
+                  color: Colors.white,
                 ),
               ),
               centerTitle: false,
+              iconTheme: const IconThemeData(color: Colors.white),
             ),
             body: Padding(
               padding: EdgeInsets.all(16),
@@ -114,15 +148,86 @@ class _VerifyemailState extends State<Verifyemail> {
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: sendVerificationEmail,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.black,
+                  // Replace the ElevatedButton.icon with this code
+                  GestureDetector(
+                    onTap: canResendEmail ? sendVerificationEmail : null,
+                    child: Opacity(
+                      opacity: canResendEmail ? 1.0 : 0.6,
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    canResendEmail
+                                        ? Icons.email
+                                        : Icons.hourglass_bottom,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.only(top: 4.0),
+                                    child: Text(
+                                      canResendEmail
+                                          ? 'Resend Email'
+                                          : 'Resend in ${remainingSeconds}s',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontFamily: "NexaBold",
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (canResendEmail)
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(15),
+                                      bottomRight: Radius.circular(15),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                    icon: const Icon(Icons.email, size: 30, color: Colors.white),
-                    label: const Text('Resent Email', style: TextStyle(fontSize: 22, color: Colors.white)),
-                    
+                  ),
+                  SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (!mounted) return;
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder:
+                              (_) => const KeyboardVisibilityProvider(
+                                child: Login(),
+                              ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
                   ),
                 ],
               ),

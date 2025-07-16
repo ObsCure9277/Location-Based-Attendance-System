@@ -159,7 +159,7 @@ class _AdmintimetablepageState extends State<Admintimetablepage> {
                 if (filteredDocs.isEmpty) {
                   return Center(
                     child: Text(
-                      "No Record Found !",
+                      "No Class Found !",
                       style: TextStyle(
                         fontSize: screenWidth * 0.045,
                         fontFamily: "NexaBold",

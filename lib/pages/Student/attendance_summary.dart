@@ -99,10 +99,10 @@ class _AttendanceSummarypageState extends State<AttendanceSummarypage> {
           if (docs.isEmpty) {
             return Center(
               child: Text(
-                "No subjects assigned.",
+                "No Attendance Found!",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: screenWidth * 0.04, // Responsive font size
+                  fontSize: screenWidth * 0.04,
                 ),
               ),
             );
