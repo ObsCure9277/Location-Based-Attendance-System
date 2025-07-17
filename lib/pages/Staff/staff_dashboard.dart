@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:pdf/pdf.dart';
@@ -348,53 +349,101 @@ class _StaffDashboardpageState extends State<StaffDashboardpage> {
   Stream<List<Map<String, dynamic>>> attendanceStatusStream(
     String subjectQuery,
   ) async* {
-    final timetableSnapshot =
-        await FirebaseFirestore.instance
-            .collection('Timetable')
-            .where('Lecturer', isEqualTo: staffName ?? '')
-            .get();
-
-    final timetableMap = <String, String>{};
-    for (var doc in timetableSnapshot.docs) {
-      final subject = (doc['Subject'] ?? 'Unknown').toString().trim();
-      timetableMap[doc.id] = subject;
+    if (staffName == null) {
+      yield [];
+      return;
     }
 
-    await for (final attendanceSnapshot
-        in FirebaseFirestore.instance.collection('Attendance').snapshots()) {
-      final docs = attendanceSnapshot.docs;
+    // Get timetable entries for this staff
+    final timetableSnapshot = await FirebaseFirestore.instance
+        .collection('Timetable')
+        .where('Lecturer', isEqualTo: staffName)
+        .get();
 
-      // Filter docs by subject
-      final filteredDocs =
-          docs.where((doc) {
-            final timetableId = doc['timetableId'];
-            final subject =
-                (timetableMap[timetableId] ?? 'Unknown')
-                    .toString()
-                    .trim()
-                    .toLowerCase();
-            final query = subjectQuery.trim().toLowerCase();
-            return query.isEmpty ? true : subject == query;
-          }).toList();
+    // Filter by subject if needed
+    final filteredTimetableDocs = timetableSnapshot.docs.where((doc) {
+      final subject = (doc['Subject'] ?? 'Unknown').toString().trim().toLowerCase();
+      final query = subjectQuery.trim().toLowerCase();
+      return query.isEmpty ? true : subject == query;
+    }).toList();
 
-      final total = filteredDocs.length;
+    // If no matching timetables, return empty result
+    if (filteredTimetableDocs.isEmpty) {
+      yield [];
+      return;
+    }
 
-      // Count each status
-      final Map<String, int> statusCounts = {};
-      for (var doc in filteredDocs) {
+    // Get all timetable IDs
+    final List<String> allTimetableIds = filteredTimetableDocs.map((doc) => doc.id).toList();
+    
+    // Create a controller to yield results
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    
+    // Track attendance counts by status
+    Map<String, int> statusCounts = {};
+    int totalRecords = 0;
+    
+    // Function to process results and yield to controller
+    void processResults() {
+      if (totalRecords == 0) {
+        controller.add([]);
+        return;
+      }
+      
+      // Convert to percentage
+      final List<Map<String, dynamic>> statusRates = statusCounts.entries.map((entry) {
+        final rate = (entry.value / totalRecords) * 100;
+        return {'status': entry.key, 'rate': rate, 'subject': subjectQuery};
+      }).toList();
+      
+      controller.add(statusRates);
+    }
+    
+    // Break up the timetable IDs into batches of 10 (Firestore's whereIn limit)
+    for (int i = 0; i < allTimetableIds.length; i += 10) {
+      final end = (i + 10 < allTimetableIds.length) ? i + 10 : allTimetableIds.length;
+      final batchIds = allTimetableIds.sublist(i, end);
+      
+      // Create a query for each batch
+      final query = FirebaseFirestore.instance
+          .collection('Attendance')
+          .where('timetableId', whereIn: batchIds);
+      
+      // Get a snapshot once (not a stream)
+      final snapshot = await query.get();
+      
+      // Count records by status
+      for (var doc in snapshot.docs) {
         final status = doc['attendanceStatus'] ?? 'Unknown';
         statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+        totalRecords++;
       }
-
-      // Convert to percentage
-      final List<Map<String, dynamic>> statusRates =
-          statusCounts.entries.map((entry) {
-            final rate = total == 0 ? 0.0 : (entry.value / total) * 100;
-            return {'status': entry.key, 'rate': rate, 'subject': subjectQuery};
-          }).toList();
-
-      yield statusRates;
     }
+    
+    // Process all results
+    processResults();
+    
+    // Create a merged stream for real-time updates
+    // This is simpler than trying to merge multiple streams
+    final mainQuery = FirebaseFirestore.instance
+        .collection('Attendance')
+        .where('timetableId', whereIn: 
+            allTimetableIds.length > 10 ? allTimetableIds.sublist(0, 10) : allTimetableIds)
+        .snapshots();
+    
+    final subscription = mainQuery.listen((snapshot) {
+      // Just notify that data changed - trigger a refresh
+      processResults();
+    });
+    
+    // Clean up when stream is done
+    controller.onCancel = () {
+      subscription.cancel();
+      controller.close();
+    };
+    
+    // Yield the stream
+    yield* controller.stream;
   }
 
   @override
