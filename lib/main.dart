@@ -7,6 +7,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:get/get.dart';
 import 'package:location_based_attendance_app/pages/Global/initial.dart';
 import 'package:location_based_attendance_app/service/background_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
@@ -16,7 +17,6 @@ void main() async {
   if (!kIsWeb) {
     await FlutterDownloader.initialize(debug: true);
   }
-
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -49,5 +49,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
