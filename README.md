@@ -6,7 +6,7 @@
       <img src="https://github.com/user-attachments/assets/a8ed1404-be55-4265-9c46-d00830f122a9" alt="geomark-showcase" />
     </td>
     <td>
-        GeoMark is a Flutter-based mobile application that automates attendance marking using geofencing technology.<br>
+        GeoMark, a Flutter-based mobile application that automates attendance marking using geofencing technology.<br>
         This app is ideal for educational institutions aiming to streamline attendance tracking via mobile devices.
     </td>
   </tr>
