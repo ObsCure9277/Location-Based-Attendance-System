@@ -32,18 +32,17 @@
 
 ### 👨‍🎓 Student
 - **Mark Attendance:** Students can mark their attendance only when physically present within the geofenced area.
-- **View Attendance History:** Students can view their own attendance records and leave request status.
+- **Attendance History:** Students can view their own attendance records and leave request status.
 - **Leave Requests:** Students can submit leave requests and track their approval status.
 
 ### 👨‍🏫 Staff
 - **Attendance Management:** Staff can view and manage attendance records for their assigned subjects.
-- **Approve/Reject Leave:** Staff can review, approve, or reject student leave requests.
 - **Analytics:** Staff have access to attendance analytics, including pie charts and statistics for their subjects.
+- **Report Generation:** Staff can export pie charts as pdf file.
 
 ### 👩‍💼 Admin
-- **User Management:** Admins can manage student and staff accounts.
-- **Attendance Oversight:** Admins have access to all attendance records and can generate reports.
-- **System Configuration:** Admins can set up geofence locations, manage subjects, and oversee the overall system.
+- **Approve/Reject Leave:** Staff can review, approve, or reject student leave requests.
+- **System Configuration:** Admins can set up geofence locations, manage subjects, tutorial groups and timetable.
 
 ---
 
@@ -65,6 +64,7 @@
 ```bash
 git clone https://github.com/ObsCure9277/Location-Based-Attendance-System.git
 cd Location-Based-Attendance-System
+flutter clean
 flutter pub get
 ```
 
