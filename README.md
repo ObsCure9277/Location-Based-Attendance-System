@@ -1,4 +1,3 @@
-# Geofence-Attendance-System
 # 📍Location-Based Attendance System
 
 <table>
