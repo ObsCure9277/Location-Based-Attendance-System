@@ -874,7 +874,7 @@ class _ClassFormState extends State<ClassForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.docToEdit == null ? 'Add Class' : 'Edit Class',
+          widget.docToEdit == null ? 'Add Tutorial Group' : 'Edit Tutorial Group',
           style: TextStyle(fontSize: 20, fontFamily: "NexaBold"),
         ),
       ),
