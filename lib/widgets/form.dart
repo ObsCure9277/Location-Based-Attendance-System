@@ -599,16 +599,22 @@ class _TimetableFormState extends State<TimetableForm> {
                             "End Time cannot be earlier than or equal to Start Time",
                       ),
                     );
-                  } else if (classLocation.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      CustomSnackBar().errorSnackBar(
-                        message: "Class Location cannot be empty",
-                      ),
-                    );
                   } else if (subject.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       CustomSnackBar().errorSnackBar(
                         message: "Subject cannot be empty",
+                      ),
+                    );
+                  }  else if (classType.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      CustomSnackBar().errorSnackBar(
+                        message: "Class Type cannot be empty",
+                      ),
+                    );
+                  } else if (classLocation.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      CustomSnackBar().errorSnackBar(
+                        message: "Class Location cannot be empty",
                       ),
                     );
                   } else if (lecturer.isEmpty) {
@@ -617,10 +623,10 @@ class _TimetableFormState extends State<TimetableForm> {
                         message: "Lecturer cannot be empty",
                       ),
                     );
-                  } else if (classType.isEmpty) {
+                  } else if (selectedGroups.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       CustomSnackBar().errorSnackBar(
-                        message: "Class Type cannot be empty",
+                        message: "Tutorial Group cannot be empty",
                       ),
                     );
                   } else {
