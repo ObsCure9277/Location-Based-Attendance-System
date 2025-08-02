@@ -283,9 +283,9 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
       });
 
       // Get Cloudinary credentials from env
-      final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? 'dbvtq5i7g';
+      final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
       final uploadPreset =
-          dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? 'ml_default';
+          dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
 
       // Upload to Cloudinary
       final imageFile = File(pickedImage.path);
