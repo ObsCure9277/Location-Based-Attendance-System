@@ -1,4 +1,4 @@
-# 📍Location-Based Attendance Syste
+# 📍Location-Based Attendance System
 <table>
   <tr>
     <td>
