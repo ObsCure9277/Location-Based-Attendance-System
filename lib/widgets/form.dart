@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:location_based_attendance_app/widgets/fieldtitle.dart';
 import 'package:location_based_attendance_app/widgets/snackbar.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TimetableForm extends StatefulWidget {
   final DocumentSnapshot? docToEdit;
@@ -1350,16 +1351,20 @@ class _LeaveRequestFormState extends State<LeaveRequestForm> {
 
   Future<String?> uploadFileToCloudinary(File file) async {
     try {
+      // Get Cloudinary credentials from environment variables
+      final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
+      final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
+
       final uploadParams = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
           filename: file.path.split("/").last,
         ),
-        'upload_preset': 'ml_default', // Replace with your unsigned preset
+        'upload_preset': uploadPreset,
       });
 
       final response = await Dio().post(
-        'https://api.cloudinary.com/v1_1/dbvtq5i7g/upload', // Replace with your cloud name
+        'https://api.cloudinary.com/v1_1/$cloudName/upload',
         data: uploadParams,
         options: Options(headers: {'X-Requested-With': 'XMLHttpRequest'}),
       );

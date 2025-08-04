@@ -108,7 +108,6 @@ class _ProfileDetailspageState extends State<ProfileDetailspage> {
         }
       }
     }
-
     // Only use local avatar if there is no network avatar
     if (avatarUrl == null ||
         avatarUrl!.isEmpty ||
