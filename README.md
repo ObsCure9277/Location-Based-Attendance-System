@@ -1,5 +1,4 @@
 # 📍Location-Based Attendance System
-
 <table>
   <tr>
     <td>
@@ -47,9 +46,25 @@
 ---
 
 ## 💻 Tech Stack
-
-- <b>Frontend:</b> Dart
-- <b>Backend:</b> Firebase, Cloudinary
+<table>
+  <tr>
+    <td>
+      <b>Frontend:</b>
+    </td>
+    <td>
+      <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b>Backend:</b>
+    </td>
+    <td>
+      <img src="https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black" />
+      <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=Cloudinary&logoColor=white" />
+    </td>
+  </tr>
+</table>
 
 ---
 
