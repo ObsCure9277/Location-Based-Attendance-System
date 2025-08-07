@@ -83,9 +83,9 @@ flutter clean
 flutter pub get
 ```
 
-### Run the App
+### Run the Application
 
-> 🔑 Make sure to set up `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) in the correct directories before running the app.
+> 🔑 Make sure to set up `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) in the correct directories before running the application.
 ```bash
 flutter run
 ```
