@@ -11,6 +11,8 @@
   </tr>
 </table>
 
+---
+
 ## 🔑 Key Features
 
 ### ✅ Geofence-Based Attendance Marking
